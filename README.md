@@ -62,6 +62,27 @@ docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src --repo
 | `--checks` | Filter specific engines (e.g., `semantic-analysis,nodesecure`). | All |
 | `--ignore` | Comma-separated glob patterns to exclude from scan. | `node_modules,dist,.git` |
 
+---
+
+## 💻 Library Usage (Programmatic API)
+
+You can integrate Skill-Scanner directly into your Node.js/TypeScript applications:
+
+```bash
+npm install @jonusnattapong/skill-scanner
+```
+
+```typescript
+import { scanCode } from '@jonusnattapong/skill-scanner';
+
+const code = "exec('rm -rf ' + path);";
+const findings = await scanCode(code, {
+  severityThreshold: 'high'
+});
+
+console.log(findings);
+```
+
 ### 🔑 Environment Variables
 
 Enable advanced AI and malware detection by setting these in your environment or a `.env` file:
