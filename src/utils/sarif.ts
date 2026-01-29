@@ -1,3 +1,4 @@
+import { relative } from "node:path";
 import type { ScanResult, SecurityFinding } from "../types.js";
 
 /**
@@ -55,9 +56,8 @@ function mapFindingToResult(finding: SecurityFinding) {
       {
         physicalLocation: {
           artifactLocation: {
-            uri: finding.filePath
-              .replace(process.cwd() + "\\", "")
-              .replace(/\\/g, "/"),
+            // Use relative path from the current working directory (repo root in CI)
+            uri: relative(process.cwd(), finding.filePath).replace(/\\/g, "/"),
           },
           region: {
             startLine: finding.line,
