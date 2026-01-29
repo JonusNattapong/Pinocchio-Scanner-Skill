@@ -36,8 +36,16 @@
     "ai-agent",
     "skill-files"
   ],
-  "author": "",
+  "author": "JonusNattapong",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonusNattapong/Skill-Scanner.git"
+  },
+  "homepage": "https://github.com/JonusNattapong/Skill-Scanner#readme",
+  "bugs": {
+    "url": "https://github.com/JonusNattapong/Skill-Scanner/issues"
+  },
   "dependencies": {
     "@babel/parser": "^7.23.6",
     "@babel/traverse": "^7.23.6",
