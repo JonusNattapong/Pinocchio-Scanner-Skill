@@ -39,7 +39,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
         run: |
-          node dist/cli.js . --sarif --report
+          node dist/cli.js . --sarif --report --ignore examples/red-team,examples/malicious-skill.ts,examples/redteam-spy-skill.ts
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
