@@ -1,0 +1,57 @@
+{
+  "name": "skill-scanner",
+  "version": "1.0.0",
+  "description": "Security scanner for agent skill files - detects command injection, unsafe file operations, hardcoded secrets, and code injection risks",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "skill-scanner": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run build",
+    "scan": "node --loader ts-node/esm src/cli.ts"
+  },
+  "keywords": [
+    "security",
+    "scanner",
+    "agent",
+    "skills",
+    "static-analysis",
+    "command-injection",
+    "secrets-detection",
+    "vulnerability-scanner",
+    "ai-agent",
+    "skill-files"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/parser": "^7.23.6",
+    "@babel/traverse": "^7.23.6",
+    "@babel/types": "^7.23.6"
+  },
+  "devDependencies": {
+    "@types/babel__traverse": "^7.20.5",
+    "@types/node": "^20.10.6",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
