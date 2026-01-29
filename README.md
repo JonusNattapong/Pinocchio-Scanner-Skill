@@ -1,90 +1,98 @@
-# 🔒 Skill Scanner (Enterprise Edition)
+# 🔒 Skill Scanner (v1.1.0)
 
-**Skill Scanner** is a comprehensive security tool for validating AI agent skills against potential security risks. It is designed to mitigate the risks associated with "shadow AI" and the use of unverified skills in workplace environments.
+## *Enterprise-Grade Security Orchestrator for AI Agent Skills*
 
-![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![TypeScript](https://img.shields.io/badge/typescript-%5E5.3-blue)
+**Skill Scanner** is a powerful security tool designed to protect your AI ecosystem by validating Agent Skills against advanced threats, "Shadow AI" patterns, and supply chain attacks.
 
-## 🛡️ Core Analysis Engines
-
-The tool employs a multi-layered defense strategy to ensure agent skills are safe for adoption:
-
-### 1. Advanced Static & Behavioral Analysis
-
-- **AST-based Detection**: Uses `@babel/parser` to identify dangerous code patterns (Command/Code Injection).
-- **NodeSecure Integration**: Deep analysis using `@nodesecure/js-x-ray` to detect obfuscated code and sensitive API probing.
-- **Path Traversal & Secrets**: Regex and AST-based scanning for hardcoded credentials and unsafe file access.
-
-### 2. LLM-assisted Semantic Analysis
-
-- **Intent Analysis**: Leverages Large Language Models (Gemini 1.5 Flash) to understand the semantic intent of code and documentation.
-- **Shadow AI Mitigation**: Detects hidden backdoors or suspicious instructions that bypass traditional static checks.
-
-### 3. Cisco AI Defense Inspection Workflows
-
-- **Compliance Scanning**: Validates skills against Cisco's security frameworks and enterprise standards.
-- **Agent Skill Validation**: Specialized scanning for `SKILL.md` files to detect dangerous binary requirements (e.g., `nc`, `nmap`) and unsafe shell patterns.
-
-### 4. VirusTotal Malware Intelligence
-
-- **Threat Database Check**: Automatically hashes code and files to check against VirusTotal's database of known malware and malicious indicators.
+[![NPM Version](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/JonusNattapong/Skill-Scanner)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Action](https://img.shields.io/badge/GitHub_Actions-Safe-green)](https://github.com/JonusNattapong/Skill-Scanner/.github/workflows/skill-scan.yml)
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start (No Installation Needed)
+
+You can run Skill Scanner instantly on any repository or file using `npx`:
+
+```bash
+# Basic scan
+npx skill-scanner ./my-skills
+
+# Scan with full Enterprise features (AI + Malware Intelligence)
+export GEMINI_API_KEY="your_api_key"
+npx skill-scanner ./my-skills --report --sarif
+```
+
+---
+
+## 🔥 Enterprise Features
+
+- **🧠 AI Semantic Analysis**: Uses Gemini 2.0 to detect malicious intent, data exfiltration, and **Prompt Injection** (Jailbreak attempts).
+- **🛡️ SARIF Support**: Ready for **GitHub Security Tab**. Export standard reports for enterprise audit trails.
+- **📊 Risk Scoring (A-F)**: Instant assessment of your skill's risk level with weighted category analysis.
+- **📦 Dependency Audit**: Scans `package.json` for deprecated, malicious, or typosquatted packages.
+- **🔗 VirusTotal Integration**: Reality-check code hashes against global malware intelligence.
+- **🏷️ OWASP LLM Top 10 Mapping**: Every finding is automatically mapped to industry-standard LLM risk categories.
+
+---
+
+## 🛠️ Usage
 
 ### Installation
 
-```bash
-npm install
-npm run build
-```
-
-### Environment Setup (Optional for Advanced Features)
-
-Create a `.env` file to enable LLM and Malware analysis:
-
-```env
-GEMINI_API_KEY=your_key_here
-VIRUSTOTAL_API_KEY=your_key_here
-```
-
-### CLI Usage
+If you prefer to install it globally:
 
 ```bash
-# Scan a directory of skills
-node dist/cli.js ./examples/skills
+npm install -g skill-scanner
+```
 
-# Scan a single skill file
-node dist/cli.js ./examples/malicious-skill.ts
+### Advanced Scan Examples
 
-# Filter by severity
-node dist/cli.js ./src --severity high
+```bash
+# 1. Standard scan with Risk Assessment
+skill-scanner ./skills
 
-# Export JSON for Security Audits
-node dist/cli.js ./src --json > report.json
+# 2. Automated Report generation (JSON + SARIF)
+skill-scanner ./skills --report --sarif
+
+# 3. High-Security mode (only report High/Critical)
+skill-scanner ./skills --severity high
+
+# 4. Filter specific checks
+skill-scanner ./skills --checks semantic-analysis,dependency-audit
 ```
 
 ---
 
-## 🔍 Detected Vulnerabilities
+## 🤖 GitHub Actions Integration
 
-| Category | Description | Severity |
-|----------|-------------|----------|
-| **Command Injection** | Unsafe execution of shell commands via user input. | High / Critical |
-| **Code Injection** | Use of `eval()`, `new Function()`, or `vm` modules. | High / Critical |
-| **Hardcoded Secrets** | API keys, AWS credentials, Tokens, and Private Keys. | Medium / Critical |
-| **File System** | Path traversal patterns and dynamic file access. | Medium / High |
-| **Agent Skill Risk** | Dangerous binaries (`nc`, `curl`) or suspicious instructions in `SKILL.md`. | High |
-| **Malicious Intent** | Detected via LLM Semantic Analysis. | High / Critical |
+Automate your security checks by adding our ready-to-use workflow. Create `.github/workflows/skill-scan.yml`:
 
-## 📚 Documentation & Inspiration
+```yaml
+uses: JonusNattapong/Skill-Scanner/.github/workflows/skill-scan.yml@main
+with:
+  api-key: ${{ secrets.GEMINI_API_KEY }}
+```
 
-- [GitHub Documentation on Agent Skills](https://docs.github.com/en/copilot/using-github-copilot/utilizing-github-copilot-agent-skills)
-- [Cisco AI Security Framework](https://www.cisco.com/c/en/us/products/security/ai-defense.html)
-- [NodeSecure js-x-ray](https://github.com/NodeSecure/js-x-ray)
+*This will automatically upload results to your GitHub Security results (SARIF).*
 
 ---
 
-Developed by the **Skill-Scanner Team** for Secure AI Adoption.
+## 🏷️ Risk Coverage
+
+| Category | OWASP Mapping | Description |
+|----------|---------------|-------------|
+| **Prompt Injection** | LLM01 | Detection of jailbreak patterns and instruction overrides. |
+| **Data Exfiltration** | LLM02 | DNS tunneling, unauthorized webhooks, and credential theft. |
+| **Supply Chain** | LLM03 | Malicious dependencies and typosquatted package names. |
+| **Excessive Agency** | LLM06 | Hidden backdoors, reverse shells, and unauthorized persistence. |
+| **Command Injection** | LLM05 | Unsafe execution of system commands. |
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+*Developed by **JonusNattapong** for the Secure AI Future.*
