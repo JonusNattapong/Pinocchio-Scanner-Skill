@@ -60,8 +60,8 @@ function mapFindingToResult(finding: SecurityFinding) {
             uri: relative(process.cwd(), finding.filePath).replace(/\\/g, "/"),
           },
           region: {
-            startLine: finding.line,
-            startColumn: finding.column,
+            startLine: Math.max(1, finding.line),
+            startColumn: Math.max(1, finding.column),
           },
         },
       },
