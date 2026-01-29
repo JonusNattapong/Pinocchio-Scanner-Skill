@@ -1,0 +1,59 @@
+name: Skill Security Scan
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  skill-scan:
+    name: Scan AI Agent Skills
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write # Required for SARIF upload
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Skill Scanner
+        run: npm install -g skill-scanner
+
+      - name: Run Security Scan
+        id: scan
+        continue-on-error: true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+        run: |
+          skill-scanner . --sarif --report
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: reports/
+
+      - name: Upload JSON Report as Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skill-scan-report
+          path: reports/*.json
+          retention-days: 30
+
+      - name: Check for Critical Issues
+        if: steps.scan.outcome == 'failure'
+        run: |
+          echo "::error::Security scan found critical or high severity issues!"
+          exit 1

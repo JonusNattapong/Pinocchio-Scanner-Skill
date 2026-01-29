@@ -136,7 +136,13 @@ export const fileSystemCheck: SecurityCheck = {
   check(context: CheckContext): void {
     const { ast, addFinding } = context;
 
-    traverse(ast, {
+    if (!ast) {
+      // Regex scan for path traversal patterns in strings found in the raw code
+      scanPathTraversal(context);
+      return;
+    }
+
+    traverse(ast!, {
       // Check for fs.readFile, fs.writeFile, etc.
       CallExpression(path: NodePath<CallExpression>) {
         const callee = path.node.callee;
@@ -199,7 +205,7 @@ export const fileSystemCheck: SecurityCheck = {
     });
 
     // Second pass for require/import analysis
-    traverse(ast, {
+    traverse(ast!, {
       // Check for require() with dynamic path or import()
       CallExpression(path: NodePath<CallExpression>) {
         const callee = path.node.callee;

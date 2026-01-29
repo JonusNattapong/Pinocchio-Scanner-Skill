@@ -16,19 +16,25 @@ export interface SecurityFinding {
   message: string;
   code: string;
   remediation: string;
+  context?: string; // Additional context (e.g., LLM reasoning)
+  metadata?: Record<string, any>; // For extra data like VirusTotal links or Cisco rule IDs
 }
 
 export type CheckType =
   | "command-injection"
   | "file-system"
   | "hardcoded-secret"
-  | "code-injection";
+  | "code-injection"
+  | "semantic-analysis" // New: LLM-based intent analysis
+  | "malware-scan" // New: VirusTotal integration
+  | "cisco-defense" // New: Cisco Framework compliance
+  | "dependency-audit"; // New: CVE/Audit for dependencies
 
 export interface CheckContext {
   filePath: string;
   code: string;
   lines: string[];
-  ast: File;
+  ast?: File;
   addFinding(finding: Omit<SecurityFinding, "filePath">): void;
 }
 

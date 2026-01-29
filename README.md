@@ -1,287 +1,90 @@
-# 🔒 Skill Scanner
+# 🔒 Skill Scanner (Enterprise Edition)
 
-A powerful security scanner for agent skill files that detects vulnerabilities including **command injection**, **unsafe file operations**, **hardcoded secrets**, and **code injection risks**.
+**Skill Scanner** is a comprehensive security tool for validating AI agent skills against potential security risks. It is designed to mitigate the risks associated with "shadow AI" and the use of unverified skills in workplace environments.
 
 ![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![TypeScript](https://img.shields.io/badge/typescript-%5E5.3-blue)
 
-## 🎯 Features
+## 🛡️ Core Analysis Engines
 
-- **Command Injection Detection** - Identifies unsafe shell command execution patterns
-- **Code Injection Detection** - Flags `eval()`, `new Function()`, and VM module usage
-- **Hardcoded Secrets Detection** - Finds API keys, passwords, tokens, and private keys
-- **File System Security** - Detects path traversal and unsafe file operations
-- **Multiple Output Formats** - Human-readable CLI output or JSON for CI/CD integration
-- **Configurable Severity Thresholds** - Filter findings by severity level
-- **Selective Checks** - Run only specific security checks as needed
+The tool employs a multi-layered defense strategy to ensure agent skills are safe for adoption:
 
-## 📦 Installation
+### 1. Advanced Static & Behavioral Analysis
+
+- **AST-based Detection**: Uses `@babel/parser` to identify dangerous code patterns (Command/Code Injection).
+- **NodeSecure Integration**: Deep analysis using `@nodesecure/js-x-ray` to detect obfuscated code and sensitive API probing.
+- **Path Traversal & Secrets**: Regex and AST-based scanning for hardcoded credentials and unsafe file access.
+
+### 2. LLM-assisted Semantic Analysis
+
+- **Intent Analysis**: Leverages Large Language Models (Gemini 1.5 Flash) to understand the semantic intent of code and documentation.
+- **Shadow AI Mitigation**: Detects hidden backdoors or suspicious instructions that bypass traditional static checks.
+
+### 3. Cisco AI Defense Inspection Workflows
+
+- **Compliance Scanning**: Validates skills against Cisco's security frameworks and enterprise standards.
+- **Agent Skill Validation**: Specialized scanning for `SKILL.md` files to detect dangerous binary requirements (e.g., `nc`, `nmap`) and unsafe shell patterns.
+
+### 4. VirusTotal Malware Intelligence
+
+- **Threat Database Check**: Automatically hashes code and files to check against VirusTotal's database of known malware and malicious indicators.
+
+---
+
+## 🚀 Getting Started
+
+### Installation
 
 ```bash
-# Install dependencies
 npm install
-
-# Build the project
 npm run build
 ```
 
-## 🚀 Usage
+### Environment Setup (Optional for Advanced Features)
 
-### CLI
+Create a `.env` file to enable LLM and Malware analysis:
+
+```env
+GEMINI_API_KEY=your_key_here
+VIRUSTOTAL_API_KEY=your_key_here
+```
+
+### CLI Usage
 
 ```bash
-# Scan a directory
-npx skill-scanner ./src
+# Scan a directory of skills
+node dist/cli.js ./examples/skills
 
-# Scan a single file
-npx skill-scanner ./skills/dangerous-skill.ts
+# Scan a single skill file
+node dist/cli.js ./examples/malicious-skill.ts
 
-# Output as JSON (great for CI/CD)
-npx skill-scanner ./src --json
+# Filter by severity
+node dist/cli.js ./src --severity high
 
-# Filter by severity (low, medium, high, critical)
-npx skill-scanner ./src --severity high
-
-# Run specific checks only
-npx skill-scanner ./src --checks command-injection,hardcoded-secret
-
-# Ignore specific patterns
-npx skill-scanner ./src --ignore "*.test.ts,dist/*"
-
-# Verbose output
-npx skill-scanner ./src -v
+# Export JSON for Security Audits
+node dist/cli.js ./src --json > report.json
 ```
 
-### Programmatic API
-
-```typescript
-import { scanCode, scanFile, scanDirectory } from 'skill-scanner';
-
-// Scan inline code
-const findings = await scanCode(`
-  const apiKey = "secret_api_key_value_12345";
-  exec(\`rm -rf \${userInput}\`);
-`);
-
-// Scan a file
-const fileFindings = await scanFile('./path/to/skill.ts');
-
-// Scan a directory
-const result = await scanDirectory('./skills', {
-  severityThreshold: 'high',
-  checks: ['command-injection', 'hardcoded-secret'],
-  ignorePatterns: ['*.test.ts'],
-});
-
-console.log(result.summary);
-// {
-//   totalFiles: 25,
-//   filesWithIssues: 3,
-//   criticalCount: 2,
-//   highCount: 5,
-//   mediumCount: 8,
-//   lowCount: 1
-// }
-```
+---
 
 ## 🔍 Detected Vulnerabilities
 
-### Command Injection 🔴
+| Category | Description | Severity |
+|----------|-------------|----------|
+| **Command Injection** | Unsafe execution of shell commands via user input. | High / Critical |
+| **Code Injection** | Use of `eval()`, `new Function()`, or `vm` modules. | High / Critical |
+| **Hardcoded Secrets** | API keys, AWS credentials, Tokens, and Private Keys. | Medium / Critical |
+| **File System** | Path traversal patterns and dynamic file access. | Medium / High |
+| **Agent Skill Risk** | Dangerous binaries (`nc`, `curl`) or suspicious instructions in `SKILL.md`. | High |
+| **Malicious Intent** | Detected via LLM Semantic Analysis. | High / Critical |
 
-Detects unsafe shell command execution patterns:
+## 📚 Documentation & Inspiration
 
-```typescript
-// ❌ UNSAFE - Dynamic command with user input
-exec(`git clone ${userRepo}`);
-spawn(command, args);
-execSync(`ls | grep ${pattern}`);
+- [GitHub Documentation on Agent Skills](https://docs.github.com/en/copilot/using-github-copilot/utilizing-github-copilot-agent-skills)
+- [Cisco AI Security Framework](https://www.cisco.com/c/en/us/products/security/ai-defense.html)
+- [NodeSecure js-x-ray](https://github.com/NodeSecure/js-x-ray)
 
-// ✅ SAFE - Static commands
-execSync('npm install');
-```
+---
 
-### Code Injection 🔴
-
-Detects dynamic code execution:
-
-```typescript
-// ❌ UNSAFE
-eval(userCode);
-new Function('a', 'b', dynamicBody);
-setTimeout('alert("xss")', 1000);
-vm.runInContext(script, context);
-
-// ✅ SAFE
-JSON.parse(jsonString);
-setTimeout(() => alert("ok"), 1000);
-```
-
-### Hardcoded Secrets 🟡
-
-Detects credentials in source code:
-
-```typescript
-// ❌ UNSAFE
-const apiKey = "secret_api_key_value";
-const password = "supersecret123";
-const awsKey = "AKIAIOSFODNN7EXAMPLE";
-const privateKey = "-----BEGIN RSA PRIVATE KEY-----";
-
-// ✅ SAFE
-const apiKey = process.env.API_KEY;
-const password = config.get('password');
-```
-
-### File System Security 🟡
-
-Detects unsafe file operations:
-
-```typescript
-// ❌ UNSAFE
-fs.readFile(userPath, 'utf-8');
-fs.writeFile(`./uploads/${filename}`, data);
-require(dynamicModule);
-import(userSpecifiedPath);
-const file = '../../../etc/passwd';
-
-// ✅ SAFE
-fs.readFile('./config.json', 'utf-8');
-fs.writeFile(path.join(ALLOWED_DIR, sanitizedName), data);
-```
-
-## 📊 Output Example
-
-```
-🔒 Skill Scanner
-   Scanning: D:\Projects\my-agent\skills
-
-┌─ CRITICAL [hardcoded-secret]
-│ skills/api-client.ts:15:4
-│
-│ AWS access key detected: "accessKey"
-│
-│   15 │ const accessKey = "AKIAIOSFODNN7EXAMPLE";
-│
-│ 💡 Use AWS credential files or environment variables. Never hardcode AWS credentials.
-└────────────────────────────────────────────────────────────
-
-┌─ HIGH [command-injection]
-│ skills/shell-tool.ts:28:2
-│
-│ Potential command injection via exec
-│
-│   28 │ exec(`${command} ${args.join(' ')}`);
-│
-│ 💡 Use parameterized commands or sanitize input. Avoid passing user input directly to shell commands.
-└────────────────────────────────────────────────────────────
-
-══════════════════════════════════════════════════════════════
-  SCAN SUMMARY
-══════════════════════════════════════════════════════════════
-
-  📁 Files scanned: 42
-  📄 Files with issues: 5
-  🔍 Total findings: 12
-
-  By severity:
-    ● CRITICAL: 2
-    ● HIGH: 5
-    ● MEDIUM: 4
-    ● LOW: 1
-
-  ⏱️  Scan completed at: 2026-01-30T04:20:00.000Z
-══════════════════════════════════════════════════════════════
-```
-
-## 🔧 Configuration
-
-### Scan Options
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `checks` | `CheckType[]` | Specific checks to run |
-| `ignorePatterns` | `string[]` | Glob patterns to ignore |
-| `severityThreshold` | `'low' \| 'medium' \| 'high' \| 'critical'` | Minimum severity to report |
-| `verbose` | `boolean` | Show verbose output |
-
-### Check Types
-
-- `command-injection` - Shell command injection
-- `code-injection` - Dynamic code execution
-- `hardcoded-secret` - Credentials in code
-- `file-system` - Unsafe file operations
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:run
-```
-
-## 🏗️ Development
-
-```bash
-# Build in watch mode
-npm run dev
-
-# Type check
-npm run lint
-
-# Clean build artifacts
-npm run clean
-```
-
-## 📁 Project Structure
-
-```
-skill-scanner/
-├── src/
-│   ├── index.ts          # Main exports
-│   ├── scanner.ts        # Core scanning logic
-│   ├── parser.ts         # Babel-based code parser
-│   ├── cli.ts            # Command-line interface
-│   ├── types.ts          # TypeScript interfaces
-│   ├── checks/
-│   │   ├── command-injection.ts
-│   │   ├── code-injection.ts
-│   │   ├── file-system.ts
-│   │   └── hardcoded-secrets.ts
-│   └── utils/
-│       ├── patterns.ts   # Detection patterns
-│       └── severity.ts   # Severity utilities
-├── tests/
-│   └── scanner.test.ts   # Test suite
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📚 Documentation
-
-- [Contributing Guide](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security Policy](SECURITY.md)
-- [Changelog](CHANGELOG.md)
-
-## � License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## 🔗 Related
-
-- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)
-- [OWASP Code Injection](https://owasp.org/www-community/attacks/Code_Injection)
-- [CWE-78: OS Command Injection](https://cwe.mitre.org/data/definitions/78.html)
-- [CWE-94: Code Injection](https://cwe.mitre.org/data/definitions/94.html)
+Developed by the **Skill-Scanner Team** for Secure AI Adoption.

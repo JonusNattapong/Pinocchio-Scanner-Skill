@@ -1,6 +1,6 @@
 {
   "name": "skill-scanner",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Security scanner for agent skill files - detects command injection, unsafe file operations, hardcoded secrets, and code injection risks",
   "type": "module",
   "main": "./dist/index.js",
@@ -41,7 +41,11 @@
   "dependencies": {
     "@babel/parser": "^7.23.6",
     "@babel/traverse": "^7.23.6",
-    "@babel/types": "^7.23.6"
+    "@babel/types": "^7.23.6",
+    "@google/generative-ai": "^0.24.1",
+    "@nodesecure/js-x-ray": "^11.1.0",
+    "axios": "^1.13.4",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
     "@types/babel__traverse": "^7.20.5",

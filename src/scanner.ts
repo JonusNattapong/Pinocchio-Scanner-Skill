@@ -16,11 +16,22 @@ import { fileSystemCheck } from "./checks/file-system.js";
 import { hardcodedSecretsCheck } from "./checks/hardcoded-secrets.js";
 import { shouldReport } from "./utils/severity.js";
 
+import { semanticAnalysisCheck } from "./checks/semantic-analysis.js";
+import { virusTotalCheck } from "./checks/virus-total.js";
+import { nodesecureCheck } from "./checks/nodesecure.js";
+import { agentSkillCheck } from "./checks/agent-skill.js";
+import { dependencyAuditCheck } from "./checks/dependency-audit.js";
+
 const ALL_CHECKS: SecurityCheck[] = [
   commandInjectionCheck,
   codeInjectionCheck,
   fileSystemCheck,
   hardcodedSecretsCheck,
+  semanticAnalysisCheck,
+  virusTotalCheck,
+  nodesecureCheck,
+  agentSkillCheck,
+  dependencyAuditCheck,
 ];
 
 const DEFAULT_IGNORE_PATTERNS = [
@@ -37,46 +48,49 @@ const DEFAULT_IGNORE_PATTERNS = [
 export async function scanCode(
   code: string,
   options: ScanOptions = {},
+  filePath = "<inline>",
 ): Promise<SecurityFinding[]> {
   const findings: SecurityFinding[] = [];
-  const filePath = "<inline>";
 
+  let parsed;
   try {
-    const parsed = parseCode(code);
-    const checkTypes = options.checks || ALL_CHECKS.map((c) => c.name);
-
-    const context: CheckContext = {
-      filePath,
-      code,
-      lines: parsed.lines,
-      ast: parsed.ast,
-      addFinding: (finding) => {
-        if (shouldReport(finding.severity, options.severityThreshold)) {
-          findings.push({
-            ...finding,
-            filePath,
-          });
-        }
-      },
+    parsed = parseCode(code);
+  } catch (err) {
+    // If parsing fails (e.g. Markdown file), we still want to run non-AST checks
+    parsed = {
+      lines: code.split("\n"),
+      ast: undefined,
     };
+  }
 
-    for (const check of ALL_CHECKS) {
-      if (checkTypes.includes(check.name)) {
-        try {
-          check.check(context);
-        } catch (err) {
-          // Log error but continue with other checks
-          if (options.verbose) {
-            console.error(`Error in check ${check.name}:`, err);
-          }
+  const context: CheckContext = {
+    filePath,
+    code,
+    lines: parsed.lines,
+    ast: parsed.ast,
+    addFinding: (finding) => {
+      if (shouldReport(finding.severity, options.severityThreshold)) {
+        findings.push({
+          ...finding,
+          filePath,
+        });
+      }
+    },
+  };
+
+  const checkTypes = options.checks || ALL_CHECKS.map((c) => c.name);
+  for (const check of ALL_CHECKS) {
+    if (checkTypes.includes(check.name)) {
+      try {
+        // Supports both sync and async checks
+        await Promise.resolve(check.check(context));
+      } catch (err) {
+        // Log error but continue with other checks
+        if (options.verbose) {
+          console.error(`Error in check ${check.name}:`, err);
         }
       }
     }
-  } catch (err) {
-    // Parsing error - likely not valid JS/TS
-    throw new Error(
-      `Failed to parse code: ${err instanceof Error ? err.message : String(err)}`,
-    );
   }
 
   return findings;
@@ -88,13 +102,7 @@ export async function scanFile(
 ): Promise<SecurityFinding[]> {
   try {
     const code = await readFile(filePath, "utf-8");
-    const findings = await scanCode(code, options);
-
-    // Update file path in findings
-    return findings.map((f) => ({
-      ...f,
-      filePath,
-    }));
+    return await scanCode(code, options, filePath);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       throw new Error(`File not found: ${filePath}`);

@@ -1,0 +1,46 @@
+{
+    "$schema": "https://skill-scanner.dev/schema/rules.json",
+    "version": "1.0",
+    "rules": [
+        {
+            "id": "CUSTOM-001",
+            "name": "Suspicious Domain Access",
+            "description": "Detects attempts to access potentially malicious domains",
+            "severity": "high",
+            "patterns": [
+                "pastebin\\.com",
+                "ngrok\\.io",
+                "requestbin\\.com",
+                "webhook\\.site",
+                "discord\\.com\\/api\\/webhooks"
+            ],
+            "remediation": "Verify that external domain access is intentional and approved. Consider using allowlisted domains only.",
+            "owaspId": "LLM02"
+        },
+        {
+            "id": "CUSTOM-002",
+            "name": "Cryptocurrency Mining Keyword",
+            "description": "Detects keywords associated with cryptomining malware",
+            "severity": "critical",
+            "patterns": [
+                "cryptonight",
+                "stratum\\+tcp",
+                "coinhive",
+                "minergate"
+            ],
+            "remediation": "Remove any cryptocurrency mining code immediately. This is typically malicious behavior.",
+            "owaspId": "LLM06"
+        },
+        {
+            "id": "CUSTOM-003",
+            "name": "Base64 Encoded Payload",
+            "description": "Detects suspiciously long base64 encoded strings that may hide malicious payloads",
+            "severity": "medium",
+            "patterns": [
+                "[A-Za-z0-9+/=]{100,}"
+            ],
+            "remediation": "Decode and review base64 strings to ensure they don't contain hidden malicious code.",
+            "owaspId": "LLM05"
+        }
+    ]
+}

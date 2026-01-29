@@ -204,8 +204,14 @@ export const hardcodedSecretsCheck: SecurityCheck = {
   check(context: CheckContext): void {
     const { ast, code } = context;
 
+    if (!ast) {
+      // Run regex-based scans for patterns found in raw content (e.g., Markdown)
+      scanWithRegex(context);
+      return;
+    }
+
     // Check for variable assignments that might be secrets
-    traverse(ast, {
+    traverse(ast!, {
       // Check variable declarations like const apiKey = "..."
       VariableDeclarator(path: NodePath<VariableDeclarator>) {
         const id = path.node.id;

@@ -1,13 +1,19 @@
 #!/usr/bin/env node
+import "dotenv/config";
 
-import { resolve, relative } from "path";
+import { resolve, relative, join } from "path";
+import { mkdir, writeFile, stat } from "fs/promises";
 import { scanFile, scanDirectory } from "./scanner.js";
+import { generateSARIF } from "./utils/sarif.js";
+import { calculateRiskScore, formatRiskScore } from "./utils/risk-score.js";
+import { mapToOWASP, OWASP_LLM_TOP_10 } from "./utils/owasp.js";
 import type {
   SecurityFinding,
   ScanResult,
   ScanOptions,
   CheckType,
 } from "./types.js";
+import { existsSync } from "fs";
 
 // ANSI color codes
 const colors = {
@@ -61,6 +67,16 @@ function formatFinding(finding: SecurityFinding, basePath: string): string {
     colorize(`│`, colors.dim),
     colorize(`│`, colors.dim) + ` ${colorize(finding.message, colors.bold)}`,
   ];
+
+  // Add OWASP mapping
+  const owaspIds = mapToOWASP(finding.type, finding.message);
+  if (owaspIds.length > 0) {
+    const owaspStr = owaspIds.map((id) => `${id}`).join(", ");
+    lines.push(
+      colorize(`│`, colors.dim) +
+        colorize(` 🏷️  OWASP: ${owaspStr}`, colors.magenta),
+    );
+  }
 
   if (finding.code) {
     lines.push(colorize(`│`, colors.dim));
@@ -142,6 +158,10 @@ function formatSummary(result: ScanResult): string {
   lines.push(`  ⏱️  Scan completed at: ${result.scannedAt.toISOString()}`);
   lines.push(colorize("═".repeat(62), colors.dim));
 
+  // Add Risk Score
+  const riskAssessment = calculateRiskScore(result);
+  lines.push(formatRiskScore(riskAssessment));
+
   return lines.join("\n");
 }
 
@@ -158,10 +178,12 @@ ${colorize("ARGUMENTS:", colors.bold)}
 ${colorize("OPTIONS:", colors.bold)}
   -h, --help          Show this help message
   -v, --verbose       Show verbose output including errors
-  --json              Output results as JSON
+  --report            Auto-export a timestamped JSON report to reports/
+  --sarif             Auto-export a SARIF report for GitHub Security
   --severity <level>  Minimum severity to report (low, medium, high, critical)
   --checks <types>    Comma-separated list of checks to run:
-                      command-injection, file-system, hardcoded-secret, code-injection
+                      command-injection, file-system, hardcoded-secret, code-injection,
+                      semantic-analysis, malware-scan, cisco-defense, dependency-audit
   --ignore <patterns> Comma-separated glob patterns to ignore
 
 ${colorize("EXAMPLES:", colors.bold)}
@@ -175,6 +197,11 @@ ${colorize("DETECTED VULNERABILITIES:", colors.bold)}
   • ${colorize("Code Injection", colors.red)}       - Dynamic code execution (eval, Function)
   • ${colorize("Hardcoded Secrets", colors.yellow)}   - API keys, passwords, tokens in code
   • ${colorize("File System", colors.yellow)}         - Unsafe file operations, path traversal
+  • ${colorize("Semantic Analysis", colors.magenta)}   - LLM-assisted intent analysis
+  • ${colorize("Malware Scan", colors.bgRed)}        - VirusTotal malware database check
+  • ${colorize("Cisco AI Defense", colors.cyan)}     - Cisco security framework inspection
+  • ${colorize("Prompt Injection", colors.magenta)}   - Detection of jailbreak patterns (AI Scan)
+  • ${colorize("Dependency Audit", colors.yellow)}    - Scan for vulnerable packages in package.json
 `);
 }
 
@@ -182,16 +209,22 @@ function parseArgs(args: string[]): {
   path?: string;
   options: ScanOptions;
   json: boolean;
+  sarif: boolean;
+  report: boolean;
   help: boolean;
 } {
   const result: {
     path?: string;
     options: ScanOptions;
     json: boolean;
+    sarif: boolean;
+    report: boolean;
     help: boolean;
   } = {
     options: {},
     json: false,
+    sarif: false,
+    report: false,
     help: false,
   };
 
@@ -204,6 +237,10 @@ function parseArgs(args: string[]): {
       result.options.verbose = true;
     } else if (arg === "--json") {
       result.json = true;
+    } else if (arg === "--sarif") {
+      result.sarif = true;
+    } else if (arg === "--report") {
+      result.report = true;
     } else if (arg === "--severity" && args[i + 1]) {
       const level = args[++i] as "low" | "medium" | "high" | "critical";
       if (["low", "medium", "high", "critical"].includes(level)) {
@@ -224,7 +261,14 @@ function parseArgs(args: string[]): {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const { path: targetPath, options, json, help } = parseArgs(args);
+  const {
+    path: targetPath,
+    options,
+    json,
+    sarif,
+    report,
+    help,
+  } = parseArgs(args);
 
   if (help || !targetPath) {
     printHelp();
@@ -235,7 +279,6 @@ async function main(): Promise<void> {
 
   try {
     // Check if it's a file or directory
-    const { stat } = await import("fs/promises");
     const stats = await stat(absolutePath);
 
     if (!json) {
@@ -276,6 +319,40 @@ async function main(): Promise<void> {
 
       const hasHighSeverity =
         result.summary.criticalCount > 0 || result.summary.highCount > 0;
+
+      // Auto-export report if requested
+      if (report) {
+        const reportDir = resolve(process.cwd(), "reports");
+        if (!existsSync(reportDir)) {
+          await mkdir(reportDir, { recursive: true });
+        }
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const reportPath = join(reportDir, `scan-report-${timestamp}.json`);
+        await writeFile(reportPath, JSON.stringify(result, null, 2));
+        if (!json) {
+          console.log(
+            `\n📄 Report auto-exported to: ${colorize(reportPath, colors.cyan)}`,
+          );
+        }
+      }
+
+      // Auto-export SARIF if requested
+      if (sarif) {
+        const reportDir = resolve(process.cwd(), "reports");
+        if (!existsSync(reportDir)) {
+          await mkdir(reportDir, { recursive: true });
+        }
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const sarifPath = join(reportDir, `scan-results-${timestamp}.sarif`);
+        const sarifData = generateSARIF(result);
+        await writeFile(sarifPath, JSON.stringify(sarifData, null, 2));
+        if (!json) {
+          console.log(
+            `\n🛡️  SARIF report exported to: ${colorize(sarifPath, colors.cyan)} (Ready for GitHub upload)`,
+          );
+        }
+      }
+
       process.exit(hasHighSeverity ? 1 : 0);
     }
   } catch (err) {

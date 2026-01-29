@@ -1,0 +1,10 @@
+{
+    "name": "vulnerable-agent-skill",
+    "version": "1.0.0",
+    "dependencies": {
+        "request": "^2.88.2",
+        "node-ipc": "10.1.0",
+        "event-stream": "3.3.6",
+        "googl-auth-library": "1.0.0"
+    }
+}

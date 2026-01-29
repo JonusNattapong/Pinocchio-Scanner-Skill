@@ -172,6 +172,8 @@ export const commandInjectionCheck: SecurityCheck = {
   check(context: CheckContext): void {
     const { ast, lines, addFinding } = context;
 
+    if (!ast) return;
+
     traverse(ast, {
       // Check for child_process imports and calls
       ImportDeclaration(path: NodePath<ImportDeclaration>) {

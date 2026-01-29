@@ -32,6 +32,8 @@ export const codeInjectionCheck: SecurityCheck = {
   check(context: CheckContext): void {
     const { ast } = context;
 
+    if (!ast) return;
+
     traverse(ast, {
       // Check for eval() calls
       CallExpression(path: NodePath<CallExpression>) {
