@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/JonusNattapong/Skill-Scanner.svg?style=flat-square)](LICENSE)
 [![OWASP LLM Compliant](https://img.shields.io/badge/OWASP%20LLM-Compliant-magenta?style=flat-square)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 
-**Skill-Scanner** is an advanced security orchestration tool designed to secure the next generation of AI agents. It performs multi-dimensional analysis on AI Agent Skills (MCP, Shell-based, or Code-based) to detect hidden threats, malicious intent, and supply chain vulnerabilities before they reach your production environment.
+**Skill-Scanner** is an advanced security orchestration tool designed to secure the next generation of AI agents. It performs multi-dimensional analysis on AI Agent Skills (MCP, Shell-based, or Code-based) across multiple languages including **TypeScript/JavaScript, Python, Go, and Rust**. It detects hidden threats, malicious intent, and supply chain vulnerabilities before they reach your production environment.
 
 ---
 
@@ -118,6 +118,9 @@ Skill-Scanner findings are mapped directly to the **OWASP Top 10 for LLM Applica
 | Engine | OWASP Category | Target |
 |:---|:---|:---|
 | **Semantic Analysis** | LLM01 - Prompt Injection | Documentation & Logic |
+| **Python Security** | LLM06 - Excessive Agency | Python Source Code |
+| **Go Security** | LLM06 - Excessive Agency | Go Source Code |
+| **Rust Security** | LLM06 - Excessive Agency | Rust Source Code |
 | **Dependency Audit** | LLM03 - Supply Chain | Package Ecosystem |
 | **Logic Scanners** | LLM06 - Excessive Agency | System Access & Shells |
 | **Secrets Engine** | LLM02 - Data Disclosure | Environment & Tokens |

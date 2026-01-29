@@ -25,10 +25,14 @@ export type CheckType =
   | "file-system"
   | "hardcoded-secret"
   | "code-injection"
-  | "semantic-analysis" // New: LLM-based intent analysis
-  | "malware-scan" // New: VirusTotal integration
-  | "cisco-defense" // New: Cisco Framework compliance
-  | "dependency-audit"; // New: CVE/Audit for dependencies
+  | "semantic-analysis" // LLM-based intent analysis
+  | "malware-scan" // VirusTotal integration
+  | "cisco-defense" // Cisco Framework compliance
+  | "dependency-audit" // CVE/Audit for dependencies
+  // Multi-language support
+  | "python-security"
+  | "go-security"
+  | "rust-security";
 
 export interface CheckContext {
   filePath: string;

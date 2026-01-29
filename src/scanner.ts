@@ -22,6 +22,11 @@ import { nodesecureCheck } from "./checks/nodesecure.js";
 import { agentSkillCheck } from "./checks/agent-skill.js";
 import { dependencyAuditCheck } from "./checks/dependency-audit.js";
 
+// Multi-language support
+import { pythonCheck } from "./checks/python-security.js";
+import { goCheck } from "./checks/go-security.js";
+import { rustCheck } from "./checks/rust-security.js";
+
 const ALL_CHECKS: SecurityCheck[] = [
   commandInjectionCheck,
   codeInjectionCheck,
@@ -32,6 +37,10 @@ const ALL_CHECKS: SecurityCheck[] = [
   nodesecureCheck,
   agentSkillCheck,
   dependencyAuditCheck,
+  // Multi-language checks
+  pythonCheck,
+  goCheck,
+  rustCheck,
 ];
 
 const DEFAULT_IGNORE_PATTERNS = [
@@ -185,7 +194,18 @@ function shouldIgnore(name: string, patterns: string[]): boolean {
 
 function isScanableFile(fileName: string): boolean {
   const ext = extname(fileName);
-  return [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".md"].includes(ext);
+  return [
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".md",
+    ".py", // Python
+    ".go", // Go
+    ".rs", // Rust
+  ].includes(ext);
 }
 
 // Re-export types
