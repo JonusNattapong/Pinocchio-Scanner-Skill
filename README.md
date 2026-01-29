@@ -1,106 +1,115 @@
-# 🔒 Skill Scanner (v1.1.0)
+# 🔒 Skill-Scanner: The AI Skill Safety Guard
 
-## *Enterprise-Grade Security Orchestrator for AI Agent Skills*
+[![NPM Version](https://img.shields.io/npm/v/skill-scanner.svg?style=flat-square)](https://www.npmjs.com/package/skill-scanner)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/JonusNattapong/Skill-Scanner/skill-scan.yml?branch=main&style=flat-square)](https://github.com/JonusNattapong/Skill-Scanner/actions)
+[![License](https://img.shields.io/github/license/JonusNattapong/Skill-Scanner.svg?style=flat-square)](LICENSE)
+[![OWASP LLM Compliant](https://img.shields.io/badge/OWASP%20LLM-Compliant-magenta?style=flat-square)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 
-**Skill Scanner** is a powerful security tool designed to protect your AI ecosystem by validating Agent Skills against advanced threats, "Shadow AI" patterns, and supply chain attacks.
-
-[![NPM Version](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/JonusNattapong/Skill-Scanner)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Action](https://img.shields.io/badge/GitHub_Actions-Safe-green)](https://github.com/JonusNattapong/Skill-Scanner/actions)
+**Skill-Scanner** is an advanced security orchestration tool designed to secure the next generation of AI agents. It performs multi-dimensional analysis on AI Agent Skills (MCP, Shell-based, or Code-based) to detect hidden threats, malicious intent, and supply chain vulnerabilities before they reach your production environment.
 
 ---
 
-## 🚀 Quick Start (No Installation Needed)
+## 🌟 Why Skill-Scanner?
 
-You can run Skill Scanner instantly on any repository or file using `npx`:
+In the era of "Shadow AI," developers frequently adopt community-made "skills" or "actions" for their agents. These skills often have high-privilege access to file systems, system shells, and API tokens. Skill-Scanner ensures that every skill follows your organization's security posture.
+
+### 🛡️ Core Defense Pillars
+
+* **🧠 Cognitive Analysis**: Beyond strings; we use Gemini 2.0 to understand the *reasoning* and *intent* behind the code.
+* **📦 Supply Chain Auditing**: Detecting typosquattat package names and known malicious dependencies in `package.json`.
+* **� Behavioral Guardrails**: Identifying dangerous binary requirements (e.g., `nc`, `nmap`) in documentation and code.
+* **📊 Executive Visibility**: High-level Risk Scoring (A-F) for non-technical stakeholders plus SARIF for engineers.
+
+---
+
+## � Installation & Quick Start
+
+### ⚡ Use Instantly (npx)
+
+The fastest way to scan a local directory or file:
 
 ```bash
-# Basic scan
-npx skill-scanner ./my-skills
-
-# Scan with full Enterprise features (AI + Malware Intelligence)
-export GEMINI_API_KEY="your_api_key"
-npx skill-scanner ./my-skills --report --sarif
+npx skill-scanner ./path-to-skill
 ```
 
----
-
-## 🔥 Enterprise Features
-
-- **🧠 AI Semantic Analysis**: Uses Gemini 2.0 to detect malicious intent, data exfiltration, and **Prompt Injection** (Jailbreak attempts).
-- **🛡️ SARIF Support**: Ready for **GitHub Security Tab**. Export standard reports for enterprise audit trails.
-- **📊 Risk Scoring (A-F)**: Instant assessment of your skill's risk level with weighted category analysis.
-- **📦 Dependency Audit**: Scans `package.json` for deprecated, malicious, or typosquatted packages.
-- **🔗 VirusTotal Integration**: Reality-check code hashes against global malware intelligence.
-- **🏷️ OWASP LLM Top 10 Mapping**: Every finding is automatically mapped to industry-standard LLM risk categories.
-
----
-
-## 🛠️ Usage
-
-### Installation
-
-If you prefer to install it globally:
+### 📦 Install Globally
 
 ```bash
+# Via NPM
 npm install -g skill-scanner
+
+# Via Universal Install Script (Linux/macOS)
+curl -sSL https://raw.githubusercontent.com/JonusNattapong/Skill-Scanner/main/scripts/install.sh | bash
+```
+
+### 🐳 Docker Deployment
+
+```bash
+docker build -t skill-scanner .
+docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src --report
 ```
 
 ---
 
-## 🌍 Universal Integration
+## �️ Configuration & CLI Flags
 
-Skill-Scanner is designed to be highly portable and work on any system.
+| Flag | Description | Default |
+|:---|:---|:---|
+| `<path>` | Path to the directory or file to scan. | (Required) |
+| `--report` | Auto-exports a timestamped JSON audit report. | `false` |
+| `--sarif` | Generates SARIF for GitHub Security integration. | `false` |
+| `--severity` | Minimum severity level (`low`, `medium`, `high`, `critical`). | `low` |
+| `--checks` | Filter specific engines (e.g., `semantic-analysis,nodesecure`). | All |
+| `--ignore` | Comma-separated glob patterns to exclude from scan. | `node_modules,dist,.git` |
 
-### 🐳 1. Docker (Platform Independent)
+### 🔑 Environment Variables
 
-Run without Node.js installed by using our container:
+Enable advanced AI and malware detection by setting these in your environment or a `.env` file:
 
-```bash
-# Build and Run
-docker build -t skill-scanner .
-docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src
-```
+* `GEMINI_API_KEY`: Required for **Semantic Analysis** and **Prompt Injection Detection**.
+* `VIRUSTOTAL_API_KEY`: Required for **Malware Intelligence** scanning.
 
-### 🔗 2. Reusable GitHub Action (Composite)
+---
 
-Integrate directly into any step of your CI/CD by referencing our marketplace action:
+## 🤖 CI/CD Integration
+
+### GitHub Actions
+
+Skill-Scanner is natively compatible with GitHub's security features. Add this to your workflow:
 
 ```yaml
-- name: Security Scan
+- name: AI Skill Security Scan
   uses: JonusNattapong/Skill-Scanner@main
   with:
+    path: './skills'
     gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
     severity: 'high'
 ```
 
-*This will automatically upload results to your GitHub Security results (SARIF).*
-
-### 🛠️ 3. One-Liner Install (Linux/macOS)
-
-Direct installation for development environments:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/JonusNattapong/Skill-Scanner/main/scripts/install.sh | bash
-```
+*This action automatically uploads findings to the **GitHub Security tab (SARIF)**.*
 
 ---
 
-## 🏷️ Risk Coverage
+## 🧩 Capability Mapping
 
-| Category | OWASP Mapping | Description |
-|----------|---------------|-------------|
-| **Prompt Injection** | LLM01 | Detection of jailbreak patterns and instruction overrides. |
-| **Data Exfiltration** | LLM02 | DNS tunneling, unauthorized webhooks, and credential theft. |
-| **Supply Chain** | LLM03 | Malicious dependencies and typosquatted package names. |
-| **Excessive Agency** | LLM06 | Hidden backdoors, reverse shells, and unauthorized persistence. |
-| **Command Injection** | LLM05 | Unsafe execution of system commands. |
+Skill-Scanner findings are mapped directly to the **OWASP Top 10 for LLM Applications**:
+
+| Engine | OWASP Category | Target |
+|:---|:---|:---|
+| **Semantic Analysis** | LLM01 - Prompt Injection | Documentation & Logic |
+| **Dependency Audit** | LLM03 - Supply Chain | Package Ecosystem |
+| **Logic Scanners** | LLM06 - Excessive Agency | System Access & Shells |
+| **Secrets Engine** | LLM02 - Data Disclosure | Environment & Tokens |
+
+---
+
+## 🤝 Contributing & Security
+
+We welcome community contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
+
+**Found a security bug?** Please do not open a public issue. Report it via the instructions in [SECURITY.md](SECURITY.md).
 
 ---
 
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-*Developed by **JonusNattapong** for the Secure AI Future.*
+Developed with ❤️ by **JonusNattapong** and the Secure AI Community.
+*Empowering agents, ensuring trust.*
