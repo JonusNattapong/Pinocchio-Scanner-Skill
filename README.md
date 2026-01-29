@@ -6,7 +6,7 @@
 
 [![NPM Version](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/JonusNattapong/Skill-Scanner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Action](https://img.shields.io/badge/GitHub_Actions-Safe-green)](https://github.com/JonusNattapong/Skill-Scanner/.github/workflows/skill-scan.yml)
+[![GitHub Action](https://img.shields.io/badge/GitHub_Actions-Safe-green)](https://github.com/JonusNattapong/Skill-Scanner/actions)
 
 ---
 
@@ -46,35 +46,43 @@ If you prefer to install it globally:
 npm install -g skill-scanner
 ```
 
-### Advanced Scan Examples
-
-```bash
-# 1. Standard scan with Risk Assessment
-skill-scanner ./skills
-
-# 2. Automated Report generation (JSON + SARIF)
-skill-scanner ./skills --report --sarif
-
-# 3. High-Security mode (only report High/Critical)
-skill-scanner ./skills --severity high
-
-# 4. Filter specific checks
-skill-scanner ./skills --checks semantic-analysis,dependency-audit
-```
-
 ---
 
-## 🤖 GitHub Actions Integration
+## 🌍 Universal Integration
 
-Automate your security checks by adding our ready-to-use workflow. Create `.github/workflows/skill-scan.yml`:
+Skill-Scanner is designed to be highly portable and work on any system.
+
+### 🐳 1. Docker (Platform Independent)
+
+Run without Node.js installed by using our container:
+
+```bash
+# Build and Run
+docker build -t skill-scanner .
+docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src
+```
+
+### 🔗 2. Reusable GitHub Action (Composite)
+
+Integrate directly into any step of your CI/CD by referencing our marketplace action:
 
 ```yaml
-uses: JonusNattapong/Skill-Scanner/.github/workflows/skill-scan.yml@main
-with:
-  api-key: ${{ secrets.GEMINI_API_KEY }}
+- name: Security Scan
+  uses: JonusNattapong/Skill-Scanner@main
+  with:
+    gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+    severity: 'high'
 ```
 
 *This will automatically upload results to your GitHub Security results (SARIF).*
+
+### 🛠️ 3. One-Liner Install (Linux/macOS)
+
+Direct installation for development environments:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/JonusNattapong/Skill-Scanner/main/scripts/install.sh | bash
+```
 
 ---
 

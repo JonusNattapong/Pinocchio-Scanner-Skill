@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  scanner:
+    build: .
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+    volumes:
+      - .:/src:ro
+      - ./reports:/app/reports
+    command: ["/src", "--report", "--sarif"]

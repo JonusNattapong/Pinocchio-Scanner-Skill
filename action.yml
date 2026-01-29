@@ -1,0 +1,46 @@
+name: 'Skill Scanner Action'
+description: 'A composite action to scan AI agent skills for security vulnerabilities.'
+inputs:
+  path:
+    description: 'Path to scan'
+    required: false
+    default: '.'
+  gemini_api_key:
+    description: 'Google Gemini API Key for semantic analysis'
+    required: false
+  virustotal_api_key:
+    description: 'VirusTotal API Key for malware scanning'
+    required: false
+  severity:
+    description: 'Minimum severity to report'
+    required: false
+    default: 'medium'
+  checks:
+    description: 'Comma-separated checks to run'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Run Scanner
+      shell: bash
+      env:
+        GEMINI_API_KEY: ${{ inputs.gemini_api_key }}
+        VIRUSTOTAL_API_KEY: ${{ inputs.virustotal_api_key }}
+      run: |
+        npx skill-scanner ${{ inputs.path }} \
+          --severity ${{ inputs.severity }} \
+          --sarif \
+          --report \
+          ${{ inputs.checks && format('--checks {0}', inputs.checks) || '' }}
+
+    - name: Upload SARIF
+      uses: github/codeql-action/upload-sarif@v4
+      if: always()
+      with:
+        sarif_file: reports/
