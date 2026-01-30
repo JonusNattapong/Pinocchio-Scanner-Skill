@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability, please report it privately.
 
-- Email: <security@example.com>
+- Email: <jonusnattapong@gmail.com>
 - Include: a detailed description, steps to reproduce, and any relevant logs or PoC.
 
 We will acknowledge receipt within 72 hours and provide a timeline for remediation
