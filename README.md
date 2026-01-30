@@ -1,49 +1,44 @@
-# 🔒 Skill-Scanner: The AI Skill Safety Guard
+﻿# Skill-Scanner: AI Skill Safety Guard
 
-[![NPM Version](https://img.shields.io/npm/v/skill-scanner.svg?style=flat-square)](https://www.npmjs.com/package/skill-scanner)
+[![NPM Version](https://img.shields.io/npm/v/%40jonusnattapong%2Fskill-scanner.svg?style=flat-square)](https://www.npmjs.com/package/@jonusnattapong/skill-scanner)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/JonusNattapong/Skill-Scanner/skill-scan.yml?branch=main&style=flat-square)](https://github.com/JonusNattapong/Skill-Scanner/actions)
 [![License](https://img.shields.io/github/license/JonusNattapong/Skill-Scanner.svg?style=flat-square)](LICENSE)
-[![OWASP LLM Compliant](https://img.shields.io/badge/OWASP%20LLM-Compliant-magenta?style=flat-square)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+[![OWASP LLM Top 10](https://img.shields.io/badge/OWASP%20LLM-Top%2010-magenta?style=flat-square)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 
-**Skill-Scanner** is an advanced security orchestration tool designed to secure the next generation of AI agents. It performs multi-dimensional analysis on AI Agent Skills (MCP, Shell-based, or Code-based) across multiple languages including **TypeScript/JavaScript, Python, Go, and Rust**. It detects hidden threats, malicious intent, and supply chain vulnerabilities before they reach your production environment.
-
----
-
-## 🌟 Why Skill-Scanner?
-
-In the era of "Shadow AI," developers frequently adopt community-made "skills" or "actions" for their agents. These skills often have high-privilege access to file systems, system shells, and API tokens. Skill-Scanner ensures that every skill follows your organization's security posture.
-
-### 🛡️ Core Defense Pillars
-
-* **🧠 Cognitive Analysis**: Beyond strings; we use advanced LLMs (Gemini, Llama 3, GPT-4) to understand the *reasoning* and *intent* behind the code.
-* **🛠️ Auto-Remediation**: Generates copy-paste secure code replacements for detected vulnerabilities using your preferred AI provider.
-* **📦 Supply Chain Auditing**: Detecting typosquatted package names and known malicious dependencies in `package.json`.
-* **� Behavioral Guardrails**: Identifying dangerous binary requirements (e.g., `nc`, `nmap`) in documentation and code.
-* **📊 Executive Visibility**: High-level Risk Scoring (A-F) for non-technical stakeholders plus SARIF for engineers.
+Skill-Scanner is a security scanner for AI agent skill files. It performs static analysis across code and documentation to detect command injection, unsafe file access, hardcoded secrets, prompt injection patterns, and risky MCP definitions before they reach production.
 
 ---
 
-## � Installation & Quick Start
+## Why Skill-Scanner
 
-### ⚡ Use Instantly (npx)
+Community-made skills often run with high privileges (filesystem, shell, network, tokens). Skill-Scanner helps you validate that skills align with your security posture and highlights high-risk behavior early.
 
-The fastest way to scan a local directory or file:
+### Core capabilities
+
+- Multi-language scanning for TypeScript/JavaScript, Python, Go, and Rust
+- MCP manifest and tool schema risk detection
+- LLM-assisted semantic analysis for intent and prompt-injection signals
+- Malware and dependency auditing (VirusTotal + NodeSecure + package audit checks)
+- Optional AI-powered auto-remediation suggestions
+- SARIF export for CI and GitHub Security integration
+
+---
+
+## Installation
+
+### Use instantly with npx
 
 ```bash
-npx skill-scanner ./path-to-skill
+npx @jonusnattapong/skill-scanner ./path-to-skill
 ```
 
-### 📦 Install Globally
+### Install globally
 
 ```bash
-# Via NPM
-npm install -g skill-scanner
-
-# Via Universal Install Script (Linux/macOS)
-curl -sSL https://raw.githubusercontent.com/JonusNattapong/Skill-Scanner/main/scripts/install.sh | bash
+npm install -g @jonusnattapong/skill-scanner
 ```
 
-### 🐳 Docker Deployment
+### Docker
 
 ```bash
 docker build -t skill-scanner .
@@ -52,117 +47,147 @@ docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src --repo
 
 ---
 
-## �️ Configuration & CLI Flags
+## CLI usage
+
+```bash
+skill-scanner <path> [options]
+```
+
+### Options
 
 | Flag | Description | Default |
 | :--- | :--- | :--- |
 | `<path>` | Path to the directory or file to scan. | (Required) |
-| `--report` | Auto-exports a timestamped JSON audit report. | `false` |
-| `--sarif` | Generates SARIF for GitHub Security integration. | `false` |
-| `--severity` | Minimum severity level (`low`, `medium`, `high`, `critical`). | `low` |
-| `--checks` | Filter specific engines (e.g., `semantic-analysis,nodesecure`). | All |
-| `--ignore` | Comma-separated glob patterns to exclude from scan. | `node_modules,dist,.git` |
-| `--fix` | Enable auto-remediation suggestions (experimental). | `false` |
-| `--provider` | AI Provider selection (`gemini`, `opencode`, `molt`, `openrouter`, `openai`). | `gemini` |
-| `--model` | Specify AI Model name (e.g., `meta-llama/llama-3.1-8b-instruct:free`). | (Provider Default) |
+| `-h, --help` | Show help. |  |
+| `-v, --verbose` | Verbose output (includes errors from checks). | `false` |
+| `--json` | Print JSON output to stdout. | `false` |
+| `--report` | Auto-export a timestamped JSON report to `reports/`. | `false` |
+| `--sarif` | Export SARIF to `reports/` for GitHub Security. | `false` |
+| `--severity <level>` | Minimum severity (`low`, `medium`, `high`, `critical`). | `low` |
+| `--checks <types>` | Comma-separated list of checks to run. | All |
+| `--ignore <patterns>` | Comma-separated glob patterns to ignore. | `node_modules,dist,build,.git,*.test.*,*.spec.*` |
+| `--fix` | Enable AI auto-remediation suggestions (experimental). | `false` |
+| `--provider <name>` | AI provider (`gemini`, `opencode`, `molt`, `openrouter`, `openai`). | `gemini` |
+| `--model <name>` | Override the provider model name. | Provider default |
 | `--web-search` | Enable AI web search capability (if supported). | `false` |
 
-### 🤖 Multi-Provider AI Setup
-
-Skill-Scanner supports a wide range of AI backends for semantic analysis and remediation.
-
-| Provider | Requirement | Default Model |
-|:---|:---|:---|
-| **Gemini** | `GEMINI_API_KEY` | `gemini-1.5-flash` |
-| **OpenRouter** | `OPENROUTER_API_KEY` | `meta-llama/llama-3.1-8b-instruct:free` |
-| **OpenAI** | `OPENAI_API_KEY` | `gpt-4o-mini` |
-| **Opencode** | `OPENCODE_API_BASE` | local |
-| **Molt** | `MOLT_API_BASE` | local |
-
-**Example using OpenRouter:**
+### Examples
 
 ```bash
-skill-scanner ./my-skill --provider openrouter --model "google/gemini-2.0-flash-exp:free" --fix
+skill-scanner ./skills
+skill-scanner ./agent --severity high
+skill-scanner ./repo --checks command-injection,hardcoded-secret
+skill-scanner ./repo --json > report.json
+skill-scanner ./skills --fix --provider openrouter --model "meta-llama/llama-3.1-8b-instruct:free"
 ```
 
 ---
 
-## 💻 Library Usage (Programmatic API)
+## Checks and detections
 
-You can integrate Skill-Scanner directly into your Node.js/TypeScript applications:
+These checks map to `--checks` values:
+
+- `command-injection` - Unsafe shell command execution
+- `code-injection` - `eval`, `Function`, obfuscation, dynamic execution (includes NodeSecure signals)
+- `file-system` - Unsafe file operations and path traversal patterns
+- `hardcoded-secret` - API keys, tokens, and secrets in code
+- `semantic-analysis` - LLM-assisted intent analysis and prompt-injection signals
+- `malware-scan` - VirusTotal lookup for suspicious artifacts
+- `dependency-audit` - Dependency risk signals for `package.json`
+- `cisco-defense` - Risky binaries and suspicious skill text in `SKILL.md`
+- `mcp-definition` - MCP manifest risks and global permissive flags
+- `tool-schema` - Overly permissive tool schemas in MCP manifests
+- `excessive-agency` - Execution-like behavior in MCP definitions
+- `python-security`, `go-security`, `rust-security` - Language-specific heuristics
+
+---
+
+## Outputs
+
+### JSON (stdout)
+
+```bash
+skill-scanner ./skills --json
+```
+
+### Report export
+
+```bash
+skill-scanner ./skills --report
+```
+
+### SARIF export
+
+```bash
+skill-scanner ./skills --sarif
+```
+
+---
+
+## AI providers
+
+Semantic analysis and remediation require an AI provider. Configure via environment variables:
+
+| Provider | Required env vars | Default model |
+| :--- | :--- | :--- |
+| Gemini | `GEMINI_API_KEY` | `gemini-pro` |
+| OpenRouter | `OPENROUTER_API_KEY` | `meta-llama/llama-3.1-8b-instruct:free` |
+| OpenAI | `OPENAI_API_KEY` | `gpt-4o-mini` |
+| Opencode | `OPENCODE_API_BASE`, optional `OPENCODE_API_KEY` | `opencode-model` |
+| Molt | `MOLT_API_BASE`, optional `MOLT_API_KEY` | `molt-model` |
+
+Notes:
+- `--web-search` currently augments prompts for providers that support search or grounding.
+- If no provider is configured, semantic analysis and auto-remediation are skipped.
+
+---
+
+## Programmatic usage
 
 ```bash
 npm install @jonusnattapong/skill-scanner
 ```
 
 ```typescript
-import { scanCode } from '@jonusnattapong/skill-scanner';
+import { scanCode } from "@jonusnattapong/skill-scanner";
 
 const code = "exec('rm -rf ' + path);";
 const findings = await scanCode(code, {
-  severityThreshold: 'high'
+  severityThreshold: "high",
 });
 
 console.log(findings);
 ```
 
-### 🔑 Environment Variables
+---
 
-Enable advanced AI and malware detection by functionality:
+## Exit codes
 
-* **General**: `VERBOSE=true`
-* **Gemini**: `GEMINI_API_KEY`
-* **OpenRouter**: `OPENROUTER_API_KEY`
-* **OpenAI Official**: `OPENAI_API_KEY`
-* **Malware Scanning**: `VIRUSTOTAL_API_KEY`
-* **Custom Backends**: `OPENCODE_API_BASE`, `MOLT_API_BASE`
-
-> **Note**: Skill-Scanner includes a smart **Retry Logic** with exponential backoff for AI requests, making it resilient to rate limits (HTTP 429) when using free LLM tiers.
+- `0` - Scan completed with no high or critical findings
+- `1` - High or critical findings detected
+- `2` - Error (invalid path, parsing failure, or runtime error)
 
 ---
 
-## 🤖 CI/CD Integration
+## CI/CD integration
 
 ### GitHub Actions
-
-Skill-Scanner is natively compatible with GitHub's security features. Add this to your workflow:
 
 ```yaml
 - name: AI Skill Security Scan
   uses: JonusNattapong/Skill-Scanner@main
   with:
-    path: './skills'
+    path: "./skills"
     gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-    severity: 'high'
+    severity: "high"
 ```
 
-*This action automatically uploads findings to the **GitHub Security tab (SARIF)**.*
+---
+
+## Security and contributing
+
+Please see `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`. For security issues, follow `SECURITY.md` and avoid public disclosure.
 
 ---
 
-## 🧩 Capability Mapping
-
-Skill-Scanner findings are mapped directly to the **OWASP Top 10 for LLM Applications**:
-
-| Engine | OWASP Category | Target |
-|:---|:---|:---|
-| **Semantic Analysis** | LLM01 - Prompt Injection | Documentation & Logic |
-| **Python Security** | LLM06 - Excessive Agency | Python Source Code |
-| **Go Security** | LLM06 - Excessive Agency | Go Source Code |
-| **Rust Security** | LLM06 - Excessive Agency | Rust Source Code |
-| **Dependency Audit** | LLM03 - Supply Chain | Package Ecosystem |
-| **Logic Scanners** | LLM06 - Excessive Agency | System Access & Shells |
-| **Secrets Engine** | LLM02 - Data Disclosure | Environment & Tokens |
-
----
-
-## 🤝 Contributing & Security
-
-We welcome community contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
-
-**Found a security bug?** Please do not open a public issue. Report it via the instructions in [SECURITY.md](SECURITY.md).
-
----
-
-Developed with ❤️ by **JonusNattapong** and the Secure AI Community.
-*Empowering agents, ensuring trust.*
+MIT License. Developed by JonusNattapong and the Secure AI Community.
