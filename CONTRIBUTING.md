@@ -1,4 +1,4 @@
-# Contributing to Skill-Scanner
+# Contributing to pinocchio-scan
 
 Thanks for taking the time to contribute!
 

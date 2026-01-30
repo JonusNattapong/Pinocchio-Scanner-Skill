@@ -1,17 +1,17 @@
-﻿# Skill-Scanner: AI Skill Safety Guard
+﻿# Pinocchio-Scanner-Skill: AI Skill Safety Guard
 
-[![NPM Version](https://img.shields.io/npm/v/%40jonusnattapong%2Fskill-scanner.svg?style=flat-square)](https://www.npmjs.com/package/@jonusnattapong/skill-scanner)
+[![NPM Version](https://img.shields.io/npm/v/%40jonusnattapong%2Fpinocchio.svg?style=flat-square)](https://www.npmjs.com/package/@jonusnattapong/Pinocchio-Scanner-Skill)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/JonusNattapong/Skill-Scanner/skill-scan.yml?branch=main&style=flat-square)](https://github.com/JonusNattapong/Skill-Scanner/actions)
 [![License](https://img.shields.io/github/license/JonusNattapong/Skill-Scanner.svg?style=flat-square)](LICENSE)
 [![OWASP LLM Top 10](https://img.shields.io/badge/OWASP%20LLM-Top%2010-magenta?style=flat-square)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 
-Skill-Scanner is a security scanner for AI agent skill files. It performs static analysis across code and documentation to detect command injection, unsafe file access, hardcoded secrets, prompt injection patterns, and risky MCP definitions before they reach production.
+Pinocchio-Scanner-Skill is a security scanner for AI agent skill files. It performs static analysis across code and documentation to detect command injection, unsafe file access, hardcoded secrets, prompt injection patterns, and risky MCP definitions before they reach production.
 
 ---
 
-## Why Skill-Scanner
+## Why pinocchio-scan
 
-Community-made skills often run with high privileges (filesystem, shell, network, tokens). Skill-Scanner helps you validate that skills align with your security posture and highlights high-risk behavior early.
+Community-made skills often run with high privileges (filesystem, shell, network, tokens). pinocchio-scan helps you validate that skills align with your security posture and highlights high-risk behavior early.
 
 ### Core capabilities
 
@@ -29,20 +29,20 @@ Community-made skills often run with high privileges (filesystem, shell, network
 ### Use instantly with npx
 
 ```bash
-npx @jonusnattapong/skill-scanner ./path-to-skill
+npx @jonusnattapong/pinocchio-scan ./path-to-skill
 ```
 
 ### Install globally
 
 ```bash
-npm install -g @jonusnattapong/skill-scanner
+npm install -g @jonusnattapong/pinocchio-scan
 ```
 
 ### Docker
 
 ```bash
-docker build -t skill-scanner .
-docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src --report
+docker build -t pinocchio-scan .
+docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" pinocchio-scan /src --report
 ```
 
 ---
@@ -50,7 +50,7 @@ docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src --repo
 ## CLI usage
 
 ```bash
-skill-scanner <path> [options]
+pinocchio-scan <path> [options]
 ```
 
 ### Options
@@ -63,6 +63,7 @@ skill-scanner <path> [options]
 | `--json` | Print JSON output to stdout. | `false` |
 | `--report` | Auto-export a timestamped JSON report to `reports/`. | `false` |
 | `--sarif` | Export SARIF to `reports/` for GitHub Security. | `false` |
+| `--tui` | Launch interactive TUI mode for configuring and running scans. | `false` |
 | `--severity <level>` | Minimum severity (`low`, `medium`, `high`, `critical`). | `low` |
 | `--checks <types>` | Comma-separated list of checks to run. | All |
 | `--ignore <patterns>` | Comma-separated glob patterns to ignore. | `node_modules,dist,build,.git,*.test.*,*.spec.*` |
@@ -74,11 +75,12 @@ skill-scanner <path> [options]
 ### Examples
 
 ```bash
-skill-scanner ./skills
-skill-scanner ./agent --severity high
-skill-scanner ./repo --checks command-injection,hardcoded-secret
-skill-scanner ./repo --json > report.json
-skill-scanner ./skills --fix --provider openrouter --model "meta-llama/llama-3.1-8b-instruct:free"
+pinocchio-scan ./skills
+pinocchio-scan ./agent --severity high
+pinocchio-scan ./repo --checks command-injection,hardcoded-secret
+pinocchio-scan ./repo --json > report.json
+pinocchio-scan ./skills --fix --provider openrouter --model "meta-llama/llama-3.1-8b-instruct:free"
+pinocchio-scan --tui
 ```
 
 ---
@@ -107,19 +109,19 @@ These checks map to `--checks` values:
 ### JSON (stdout)
 
 ```bash
-skill-scanner ./skills --json
+pinocchio-scan ./skills --json
 ```
 
 ### Report export
 
 ```bash
-skill-scanner ./skills --report
+pinocchio-scan ./skills --report
 ```
 
 ### SARIF export
 
 ```bash
-skill-scanner ./skills --sarif
+pinocchio-scan ./skills --sarif
 ```
 
 ---
@@ -145,11 +147,11 @@ Notes:
 ## Programmatic usage
 
 ```bash
-npm install @jonusnattapong/skill-scanner
+npm install @jonusnattapong/pinocchio-scan
 ```
 
 ```typescript
-import { scanCode } from "@jonusnattapong/skill-scanner";
+import { scanCode } from "@jonusnattapong/pinocchio-scan";
 
 const code = "exec('rm -rf ' + path);";
 const findings = await scanCode(code, {

@@ -14,7 +14,7 @@ export function generateSARIF(result: ScanResult) {
       {
         tool: {
           driver: {
-            name: "Skill-Scanner",
+            name: "pinocchio-scan",
             version: "1.0.0",
             informationUri: "https://github.com/JonusNattapong/Skill-Scanner",
             rules: generateRules(result.findings),

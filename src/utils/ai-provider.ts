@@ -65,7 +65,7 @@ export class OpenAICompatibleProvider implements AIProvider {
               Authorization: `Bearer ${this.apiKey}`,
               "Content-Type": "application/json",
               "HTTP-Referer": "https://github.com/JonusNattapong/Skill-Scanner",
-              "X-Title": "Skill-Scanner Security Audit",
+              "X-Title": "pinocchio-scan Security Audit",
             },
           },
         );

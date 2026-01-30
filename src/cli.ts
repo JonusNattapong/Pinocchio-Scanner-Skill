@@ -175,10 +175,10 @@ function formatSummary(result: ScanResult): string {
 
 function printHelp(): void {
   console.log(`
-${colorize("Skill Scanner", colors.bold + colors.cyan)} - Security Scanner for Agent Skill Files
+${colorize("pinocchio-scan", colors.bold + colors.cyan)} - Security Scanner for Agent Skill Files
 
 ${colorize("USAGE:", colors.bold)}
-  skill-scanner <path> [options]
+  pinocchio-scan <path> [options]
 
 ${colorize("ARGUMENTS:", colors.bold)}
   <path>              Path to file or directory to scan
@@ -188,6 +188,7 @@ ${colorize("OPTIONS:", colors.bold)}
   -v, --verbose       Show verbose output including errors
   --report            Auto-export a timestamped JSON report to reports/
   --sarif             Auto-export a SARIF report for GitHub Security
+  --tui               Launch interactive TUI mode
   --severity <level>  Minimum severity to report (low, medium, high, critical)
   --checks <types>    Comma-separated list of checks to run:
                       command-injection, file-system, hardcoded-secret, code-injection,
@@ -198,10 +199,10 @@ ${colorize("OPTIONS:", colors.bold)}
   --web-search        Enable AI web search capability (if supported)
 
 ${colorize("EXAMPLES:", colors.bold)}
-  skill-scanner ./src
-  skill-scanner ./skills --severity high
-  skill-scanner ./agent --checks command-injection,hardcoded-secret
-  skill-scanner ./project --json > report.json
+  pinocchio-scan ./src
+  pinocchio-scan ./skills --severity high
+  pinocchio-scan ./agent --checks command-injection,hardcoded-secret
+  pinocchio-scan ./project --json > report.json
 
 ${colorize("DETECTED VULNERABILITIES:", colors.bold)}
   • ${colorize("Command Injection", colors.red)}    - Unsafe shell command execution
@@ -224,6 +225,7 @@ function parseArgs(args: string[]): {
   report: boolean;
   help: boolean;
   fix: boolean;
+  tui: boolean;
 } {
   const result: {
     path?: string;
@@ -233,6 +235,7 @@ function parseArgs(args: string[]): {
     report: boolean;
     help: boolean;
     fix: boolean;
+    tui: boolean;
   } = {
     options: {},
     json: false,
@@ -240,6 +243,7 @@ function parseArgs(args: string[]): {
     report: false,
     help: false,
     fix: false,
+    tui: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -251,6 +255,8 @@ function parseArgs(args: string[]): {
       result.options.verbose = true;
     } else if (arg === "--json") {
       result.json = true;
+    } else if (arg === "--tui") {
+      result.tui = true;
     } else if (arg === "--sarif") {
       result.sarif = true;
     } else if (arg === "--report") {
@@ -291,16 +297,29 @@ async function main(): Promise<void> {
     report,
     help,
     fix,
+    tui,
   } = parseArgs(args);
 
-  if (help || !targetPath) {
+  if (help || (!targetPath && !tui)) {
     printHelp();
     process.exit(help ? 0 : 1);
   }
 
+  if (tui) {
+    const { startTui } = await import("./tui/index.js");
+    startTui({
+      initialPath: targetPath,
+      initialOptions: rawOptions,
+      json,
+      report,
+      sarif,
+    });
+    return;
+  }
+
   const options: ScanOptions = { ...rawOptions, fix };
 
-  const absolutePath = resolve(process.cwd(), targetPath);
+  const absolutePath = resolve(process.cwd(), targetPath ?? ".");
 
   try {
     // Check if it's a file or directory
@@ -308,7 +327,7 @@ async function main(): Promise<void> {
 
     if (!json) {
       console.log("");
-      console.log(colorize("🔒 Skill Scanner", colors.bold + colors.cyan));
+      console.log(colorize("🔒 pinocchio-scan", colors.bold + colors.cyan));
       console.log(colorize(`   Scanning: ${absolutePath}`, colors.dim));
       if (fix) {
         console.log(

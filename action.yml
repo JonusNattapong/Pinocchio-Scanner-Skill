@@ -1,4 +1,4 @@
-name: 'Skill Scanner Action'
+name: 'Pinocchio-Scanner-Skill Action'
 description: 'A composite action to scan AI agent skills for security vulnerabilities.'
 inputs:
   path:
@@ -27,13 +27,13 @@ runs:
       with:
         node-version: '20'
 
-    - name: Run Scanner
+    - name: Run pinocchio-scan
       shell: bash
       env:
         GEMINI_API_KEY: ${{ inputs.gemini_api_key }}
         VIRUSTOTAL_API_KEY: ${{ inputs.virustotal_api_key }}
       run: |
-        npx skill-scanner ${{ inputs.path }} \
+        npx pinocchio-scan ${{ inputs.path }} \
           --severity ${{ inputs.severity }} \
           --sarif \
           --report \

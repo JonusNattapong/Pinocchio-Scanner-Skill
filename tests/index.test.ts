@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { scanCode, scanFile, scanDirectory } from "../src/index";
 import type { SecurityFinding } from "../src/types";
 
-describe("Skill Scanner", () => {
+describe("pinocchio-scan", () => {
   describe("scanCode", () => {
     it("should return empty array for safe code", async () => {
       const safeCode = `
