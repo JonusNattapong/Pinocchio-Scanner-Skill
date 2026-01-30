@@ -59,7 +59,7 @@ If no risks are found, return exactly: []`;
                 "Perform a manual security review of this skill.",
               context: finding.reasoning,
               metadata: {
-                aiProvider: options?.aiProvider || "gemini",
+                aiProvider: options?.aiProvider || "openrouter",
                 aiModel: options?.aiModel || "default",
                 confidence: "high",
               },

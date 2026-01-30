@@ -106,7 +106,7 @@ export class WebSearchProvider implements AIProvider {
 }
 
 export function getAIProvider(options: ScanOptions): AIProvider | null {
-  const providerType = options.aiProvider || "gemini";
+  const providerType = options.aiProvider || "openrouter";
   let provider: AIProvider | null = null;
 
   if (providerType === "gemini") {
