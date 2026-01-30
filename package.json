@@ -1,12 +1,12 @@
 {
-  "name": "@jonusnattapong/skill-scanner",
-  "version": "1.3.0",
+  "name": "@jonusnattapong/pinocchio-scan",
+  "version": "1.3.1",
   "description": "Security scanner for agent skill files - detects command injection, unsafe file operations, hardcoded secrets, and code injection risks",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "skill-scanner": "./dist/cli.js"
+    "pinocchio-scan": "./dist/cli.js"
   },
   "exports": {
     ".": {
@@ -37,14 +37,14 @@
     "skill-files"
   ],
   "author": "JonusNattapong",
-  "license": "MIT",
+  "license": "CC BY-NC-ND 4.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JonusNattapong/Skill-Scanner.git"
+    "url": "git+https://github.com/JonusNattapong/Pinocchio-Scanner-Skill.git"
   },
-  "homepage": "https://github.com/JonusNattapong/Skill-Scanner#readme",
+  "homepage": "https://github.com/JonusNattapong/Pinocchio-Scanner-Skill#readme",
   "bugs": {
-    "url": "https://github.com/JonusNattapong/Skill-Scanner/issues"
+    "url": "https://github.com/JonusNattapong/Pinocchio-Scanner-Skill/issues"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -53,14 +53,18 @@
     "@babel/parser": "^7.23.6",
     "@babel/traverse": "^7.23.6",
     "@babel/types": "^7.23.6",
-    "@google/generative-ai": "^0.25.0",
+    "@google/generative-ai": "^0.24.1",
     "@nodesecure/js-x-ray": "^11.1.0",
     "axios": "^1.13.4",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "ink": "^5.0.1",
+    "react": "^18.3.1",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@types/babel__traverse": "^7.20.5",
     "@types/node": "^20.10.6",
+    "@types/react": "^18.2.66",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
