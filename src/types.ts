@@ -5,6 +5,16 @@ export interface ScanOptions {
   ignorePatterns?: string[];
   severityThreshold?: "low" | "medium" | "high" | "critical";
   verbose?: boolean;
+  fix?: boolean;
+  aiProvider?:
+    | "gemini"
+    | "opencode"
+    | "molt"
+    | "openrouter"
+    | "openai"
+    | string;
+  aiModel?: string;
+  webSearch?: boolean;
 }
 
 export interface SecurityFinding {
@@ -15,7 +25,7 @@ export interface SecurityFinding {
   column: number;
   message: string;
   code: string;
-  remediation: string;
+  remediation?: string;
   context?: string; // Additional context (e.g., LLM reasoning)
   metadata?: Record<string, any>; // For extra data like VirusTotal links or Cisco rule IDs
 }
@@ -29,6 +39,9 @@ export type CheckType =
   | "malware-scan" // VirusTotal integration
   | "cisco-defense" // Cisco Framework compliance
   | "dependency-audit" // CVE/Audit for dependencies
+  | "mcp-definition"
+  | "tool-schema"
+  | "excessive-agency"
   // Multi-language support
   | "python-security"
   | "go-security"
@@ -44,7 +57,7 @@ export interface CheckContext {
 
 export interface SecurityCheck {
   name: CheckType;
-  check(context: CheckContext): void;
+  check(context: CheckContext, options?: ScanOptions): void | Promise<void>;
 }
 
 export interface ScanResult {

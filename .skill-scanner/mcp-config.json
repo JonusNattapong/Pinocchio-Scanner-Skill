@@ -1,0 +1,15 @@
+{
+  "trustedHosts": [
+    "localhost",
+    "127.0.0.1",
+    "example.com"
+  ],
+  "allowedTools": [
+    "logger",
+    "metrics"
+  ],
+  "maxAllowedScopes": [
+    "read:files",
+    "network:outbound"
+  ]
+}

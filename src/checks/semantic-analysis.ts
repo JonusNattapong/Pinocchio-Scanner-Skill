@@ -1,29 +1,16 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getAIProvider } from "../utils/ai-provider.js";
 import type { SecurityCheck, CheckContext } from "../types.js";
-
-// Initialize Gemini
-const API_KEY = process.env.GEMINI_API_KEY || "";
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 export const semanticAnalysisCheck: SecurityCheck = {
   name: "semantic-analysis",
 
-  async check(context: CheckContext): Promise<void> {
-    if (!genAI) {
+  async check(context: CheckContext, options?: any): Promise<void> {
+    const provider = getAIProvider(options || {});
+    if (!provider) {
       if (process.env.VERBOSE) {
-        console.warn("Skipping Semantic Analysis: GEMINI_API_KEY not found.");
+        console.warn("Skipping Semantic Analysis: AI provider not configured.");
       }
       return;
-    }
-
-    let model;
-    try {
-      model = genAI.getGenerativeModel({
-        model: "gemini-flash-latest",
-        generationConfig: { responseMimeType: "application/json" },
-      });
-    } catch (e) {
-      model = genAI.getGenerativeModel({ model: "gemini-pro-latest" });
     }
 
     const prompt = `You are an elite Cyber Security Auditor for AI Agent Skills.
@@ -54,9 +41,7 @@ RESPONSE FORMAT (JSON ONLY):
 If no risks are found, return exactly: []`;
 
     try {
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const text = await provider.generateContent(prompt, { json: true });
 
       try {
         const findings = JSON.parse(text);
@@ -74,25 +59,26 @@ If no risks are found, return exactly: []`;
                 "Perform a manual security review of this skill.",
               context: finding.reasoning,
               metadata: {
-                aiModel: "gemini-1.5-flash",
+                aiProvider: options?.aiProvider || "gemini",
+                aiModel: options?.aiModel || "default",
                 confidence: "high",
               },
             });
           }
         }
       } catch (parseErr) {
-        // Fallback for non-json response if somehow generated
+        // Fallback for non-json response
         if (text.includes("severity") && text.includes("message")) {
           const jsonMatch = text.match(/\[.*\]/s);
           if (jsonMatch) {
             const findings = JSON.parse(jsonMatch[0]);
-            // Add findings...
+            // (Re-using findings logic above if needed)
           }
         }
       }
     } catch (error: any) {
       if (process.env.VERBOSE) {
-        console.error("Gemini API Error:", error.message);
+        console.error("AI Provider Error:", error.message);
       }
     }
   },

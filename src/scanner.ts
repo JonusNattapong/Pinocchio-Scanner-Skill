@@ -15,12 +15,14 @@ import { codeInjectionCheck } from "./checks/code-injection.js";
 import { fileSystemCheck } from "./checks/file-system.js";
 import { hardcodedSecretsCheck } from "./checks/hardcoded-secrets.js";
 import { shouldReport } from "./utils/severity.js";
+import { generateRemediation } from "./remediation.js";
 
 import { semanticAnalysisCheck } from "./checks/semantic-analysis.js";
 import { virusTotalCheck } from "./checks/virus-total.js";
 import { nodesecureCheck } from "./checks/nodesecure.js";
 import { agentSkillCheck } from "./checks/agent-skill.js";
 import { dependencyAuditCheck } from "./checks/dependency-audit.js";
+import { mcpScannerCheck } from "./checks/mcp-scanner.js";
 
 // Multi-language support
 import { pythonCheck } from "./checks/python-security.js";
@@ -33,6 +35,7 @@ const ALL_CHECKS: SecurityCheck[] = [
   fileSystemCheck,
   hardcodedSecretsCheck,
   semanticAnalysisCheck,
+  mcpScannerCheck,
   virusTotalCheck,
   nodesecureCheck,
   agentSkillCheck,
@@ -92,13 +95,20 @@ export async function scanCode(
     if (checkTypes.includes(check.name)) {
       try {
         // Supports both sync and async checks
-        await Promise.resolve(check.check(context));
+        await Promise.resolve(check.check(context, options));
       } catch (err) {
         // Log error but continue with other checks
         if (options.verbose) {
           console.error(`Error in check ${check.name}:`, err);
         }
       }
+    }
+  }
+
+  // If the fix option is enabled, generate remediations for the findings.
+  if (options.fix) {
+    for (const finding of findings) {
+      finding.remediation = await generateRemediation(finding, options);
     }
   }
 

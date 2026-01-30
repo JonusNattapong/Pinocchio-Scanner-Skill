@@ -98,11 +98,19 @@ function formatFinding(finding: SecurityFinding, basePath: string): string {
   }
 
   if (finding.remediation) {
+    // Present remediation as a copyable multi-line code suggestion
     lines.push(colorize(`│`, colors.dim));
     lines.push(
       colorize(`│`, colors.dim) +
-        colorize(` 💡 ${finding.remediation}`, colors.green),
+        colorize(` 💡 Secure Suggestion (copy-paste):`, colors.green),
     );
+    lines.push(colorize(`│`, colors.dim));
+
+    const remediationLines = finding.remediation.split("\n");
+    remediationLines.forEach((rLine) => {
+      // Print remediation lines without ANSI color codes so they can be copied cleanly
+      lines.push(`│   ${rLine}`);
+    });
   }
 
   lines.push(colorize(`└${"─".repeat(60)}`, colors.dim));
@@ -185,6 +193,9 @@ ${colorize("OPTIONS:", colors.bold)}
                       command-injection, file-system, hardcoded-secret, code-injection,
                       semantic-analysis, malware-scan, cisco-defense, dependency-audit
   --ignore <patterns> Comma-separated glob patterns to ignore
+  --fix               Enable auto-remediation suggestions (experimental)
+  --provider <name>   AI Provider (gemini, opencode, molt, openrouter, openai)
+  --web-search        Enable AI web search capability (if supported)
 
 ${colorize("EXAMPLES:", colors.bold)}
   skill-scanner ./src
@@ -212,6 +223,7 @@ function parseArgs(args: string[]): {
   sarif: boolean;
   report: boolean;
   help: boolean;
+  fix: boolean;
 } {
   const result: {
     path?: string;
@@ -220,12 +232,14 @@ function parseArgs(args: string[]): {
     sarif: boolean;
     report: boolean;
     help: boolean;
+    fix: boolean;
   } = {
     options: {},
     json: false,
     sarif: false,
     report: false,
     help: false,
+    fix: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -241,6 +255,8 @@ function parseArgs(args: string[]): {
       result.sarif = true;
     } else if (arg === "--report") {
       result.report = true;
+    } else if (arg === "--fix") {
+      result.fix = true;
     } else if (arg === "--severity" && args[i + 1]) {
       const level = args[++i] as "low" | "medium" | "high" | "critical";
       if (["low", "medium", "high", "critical"].includes(level)) {
@@ -251,7 +267,13 @@ function parseArgs(args: string[]): {
       result.options.checks = checks;
     } else if (arg === "--ignore" && args[i + 1]) {
       result.options.ignorePatterns = args[++i].split(",");
-    } else if (!arg.startsWith("-")) {
+    } else if (arg === "--provider" && args[i + 1]) {
+      result.options.aiProvider = args[++i];
+    } else if (arg === "--model" && args[i + 1]) {
+      result.options.aiModel = args[++i];
+    } else if (arg === "--web-search") {
+      result.options.webSearch = true;
+    } else if (!arg.startsWith("-") && !result.path) {
       result.path = arg;
     }
   }
@@ -263,17 +285,20 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const {
     path: targetPath,
-    options,
+    options: rawOptions,
     json,
     sarif,
     report,
     help,
+    fix,
   } = parseArgs(args);
 
   if (help || !targetPath) {
     printHelp();
     process.exit(help ? 0 : 1);
   }
+
+  const options: ScanOptions = { ...rawOptions, fix };
 
   const absolutePath = resolve(process.cwd(), targetPath);
 
@@ -285,6 +310,30 @@ async function main(): Promise<void> {
       console.log("");
       console.log(colorize("🔒 Skill Scanner", colors.bold + colors.cyan));
       console.log(colorize(`   Scanning: ${absolutePath}`, colors.dim));
+      if (fix) {
+        console.log(
+          colorize(
+            `   Auto-remediation: ${colorize("ENABLED", colors.green + colors.bold)} (Experimental)`,
+            colors.dim,
+          ),
+        );
+      }
+      if (options.aiProvider) {
+        console.log(
+          colorize(
+            `   AI Provider: ${colorize(options.aiProvider, colors.magenta + colors.bold)}`,
+            colors.dim,
+          ),
+        );
+      }
+      if (options.webSearch) {
+        console.log(
+          colorize(
+            `   Web Search: ${colorize("ENABLED", colors.blue + colors.bold)}`,
+            colors.dim,
+          ),
+        );
+      }
       console.log("");
     }
 

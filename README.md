@@ -15,8 +15,9 @@ In the era of "Shadow AI," developers frequently adopt community-made "skills" o
 
 ### 🛡️ Core Defense Pillars
 
-* **🧠 Cognitive Analysis**: Beyond strings; we use Gemini 2.0 to understand the *reasoning* and *intent* behind the code.
-* **📦 Supply Chain Auditing**: Detecting typosquattat package names and known malicious dependencies in `package.json`.
+* **🧠 Cognitive Analysis**: Beyond strings; we use advanced LLMs (Gemini, Llama 3, GPT-4) to understand the *reasoning* and *intent* behind the code.
+* **🛠️ Auto-Remediation**: Generates copy-paste secure code replacements for detected vulnerabilities using your preferred AI provider.
+* **📦 Supply Chain Auditing**: Detecting typosquatted package names and known malicious dependencies in `package.json`.
 * **� Behavioral Guardrails**: Identifying dangerous binary requirements (e.g., `nc`, `nmap`) in documentation and code.
 * **📊 Executive Visibility**: High-level Risk Scoring (A-F) for non-technical stakeholders plus SARIF for engineers.
 
@@ -54,13 +55,35 @@ docker run -v $(pwd):/src -e GEMINI_API_KEY="your_key" skill-scanner /src --repo
 ## �️ Configuration & CLI Flags
 
 | Flag | Description | Default |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `<path>` | Path to the directory or file to scan. | (Required) |
 | `--report` | Auto-exports a timestamped JSON audit report. | `false` |
 | `--sarif` | Generates SARIF for GitHub Security integration. | `false` |
 | `--severity` | Minimum severity level (`low`, `medium`, `high`, `critical`). | `low` |
 | `--checks` | Filter specific engines (e.g., `semantic-analysis,nodesecure`). | All |
 | `--ignore` | Comma-separated glob patterns to exclude from scan. | `node_modules,dist,.git` |
+| `--fix` | Enable auto-remediation suggestions (experimental). | `false` |
+| `--provider` | AI Provider selection (`gemini`, `opencode`, `molt`, `openrouter`, `openai`). | `gemini` |
+| `--model` | Specify AI Model name (e.g., `meta-llama/llama-3.1-8b-instruct:free`). | (Provider Default) |
+| `--web-search` | Enable AI web search capability (if supported). | `false` |
+
+### 🤖 Multi-Provider AI Setup
+
+Skill-Scanner supports a wide range of AI backends for semantic analysis and remediation.
+
+| Provider | Requirement | Default Model |
+|:---|:---|:---|
+| **Gemini** | `GEMINI_API_KEY` | `gemini-1.5-flash` |
+| **OpenRouter** | `OPENROUTER_API_KEY` | `meta-llama/llama-3.1-8b-instruct:free` |
+| **OpenAI** | `OPENAI_API_KEY` | `gpt-4o-mini` |
+| **Opencode** | `OPENCODE_API_BASE` | local |
+| **Molt** | `MOLT_API_BASE` | local |
+
+**Example using OpenRouter:**
+
+```bash
+skill-scanner ./my-skill --provider openrouter --model "google/gemini-2.0-flash-exp:free" --fix
+```
 
 ---
 
@@ -85,10 +108,16 @@ console.log(findings);
 
 ### 🔑 Environment Variables
 
-Enable advanced AI and malware detection by setting these in your environment or a `.env` file:
+Enable advanced AI and malware detection by functionality:
 
-* `GEMINI_API_KEY`: Required for **Semantic Analysis** and **Prompt Injection Detection**.
-* `VIRUSTOTAL_API_KEY`: Required for **Malware Intelligence** scanning.
+* **General**: `VERBOSE=true`
+* **Gemini**: `GEMINI_API_KEY`
+* **OpenRouter**: `OPENROUTER_API_KEY`
+* **OpenAI Official**: `OPENAI_API_KEY`
+* **Malware Scanning**: `VIRUSTOTAL_API_KEY`
+* **Custom Backends**: `OPENCODE_API_BASE`, `MOLT_API_BASE`
+
+> **Note**: Skill-Scanner includes a smart **Retry Logic** with exponential backoff for AI requests, making it resilient to rate limits (HTTP 429) when using free LLM tiers.
 
 ---
 
