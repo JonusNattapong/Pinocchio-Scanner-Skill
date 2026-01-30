@@ -190,4 +190,4 @@ Please see `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`. For security issues, foll
 
 ---
 
-MIT License. Developed by JonusNattapong and the Secure AI Community.
+CC BY-NC-ND 4.0. Developed by JonusNattapong and the Secure AI Community.
