@@ -1,6 +1,6 @@
 ---
 name: gog
-description: Google Workspace CLI for Gmail, Calendar, Drive, Contacts, Sheets, and Docs.
+description: "Send emails, manage calendar events, search Google Drive, read and update Sheets, and export Docs using the gog CLI. Use when the user needs to interact with Gmail, Google Calendar, Drive, Contacts, Sheets, or Docs from the command line, or mentions sending email, scheduling events, reading spreadsheets, or the gog CLI."
 homepage: https://gogcli.sh
 metadata: {"moltbot":{"emoji":"🎮","requires":{"bins":["gog"]},"install":[{"id":"brew","kind":"brew","formula":"steipete/tap/gogcli","bins":["gog"],"label":"Install gog (brew)"}]}}
 ---
@@ -8,6 +8,18 @@ metadata: {"moltbot":{"emoji":"🎮","requires":{"bins":["gog"]},"install":[{"id
 # gog
 
 Use `gog` for Gmail/Calendar/Drive/Contacts/Sheets/Docs. Requires OAuth setup.
+
+## Verification
+
+After sending emails or creating events, verify the operation succeeded:
+```bash
+# Verify sent email appears in Sent folder
+gog gmail messages search "in:sent subject:\"Hi\"" --max 1 --json
+# Verify calendar event was created
+gog calendar events <calendarId> --from <iso> --to <iso> --json
+# Verify sheet data was written
+gog sheets get <sheetId> "Tab!A1:D10" --json
+```
 
 Setup (once)
 - `gog auth credentials /path/to/client_secret.json`
@@ -90,3 +102,4 @@ Notes
 - Docs supports export/cat/copy. In-place edits require a Docs API client (not in gog).
 - Confirm before sending mail or creating events.
 - `gog gmail search` returns one row per thread; use `gog gmail messages search` when you need every individual email returned separately.
+- Always confirm with the user before sending mail or creating/deleting events.

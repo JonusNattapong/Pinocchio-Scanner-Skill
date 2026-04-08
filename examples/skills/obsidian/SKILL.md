@@ -1,6 +1,6 @@
 ---
 name: obsidian
-description: Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.
+description: "Create, search, move, and delete notes in Obsidian vaults using obsidian-cli. Manages vault discovery, note refactoring with automatic wikilink updates, and content search. Use when the user asks about Obsidian, note management, vault operations, .md notes in a vault, wikilinks, or mentions obsidian-cli."
 homepage: https://help.obsidian.md
 metadata: {"moltbot":{"emoji":"💎","requires":{"bins":["obsidian-cli"]},"install":[{"id":"brew","kind":"brew","formula":"yakitrak/yakitrak/obsidian-cli","bins":["obsidian-cli"],"label":"Install obsidian-cli (brew)"}]}}
 ---
@@ -53,3 +53,15 @@ Delete
 - `obsidian-cli delete "path/note"`
 
 Prefer direct edits when appropriate: open the `.md` file and change it; Obsidian will pick it up.
+
+## Verification
+
+After creating or moving notes, verify the operation:
+```bash
+# Confirm note exists after create/move
+obsidian-cli search "note-name"
+# Confirm content after direct file edit
+obsidian-cli search-content "expected text"
+# Confirm vault is configured
+obsidian-cli print-default --path-only
+```
