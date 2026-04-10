@@ -136,41 +136,34 @@ export async function scanDirectory(
 ): Promise<ScanResult> {
   const findings: SecurityFinding[] = [];
   const ignorePatterns = options.ignorePatterns || DEFAULT_IGNORE_PATTERNS;
-  let totalFiles = 0;
   const filesWithIssues = new Set<string>();
+  const targets = await collectScanTargets(dirPath, ignorePatterns);
+  const totalFiles = targets.length;
+  let scannedFiles = 0;
 
-  async function scanRecursive(currentPath: string): Promise<void> {
-    const entries = await readdir(currentPath, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const fullPath = join(currentPath, entry.name);
-
-      // Check if should ignore
-      if (shouldIgnore(entry.name, ignorePatterns)) {
-        continue;
+  for (const fullPath of targets) {
+    try {
+      const fileFindings = await scanFile(fullPath, options);
+      if (fileFindings.length > 0) {
+        filesWithIssues.add(fullPath);
+        findings.push(...fileFindings);
       }
-
-      if (entry.isDirectory()) {
-        await scanRecursive(fullPath);
-      } else if (entry.isFile() && isScanableFile(entry.name)) {
-        totalFiles++;
-        try {
-          const fileFindings = await scanFile(fullPath, options);
-          if (fileFindings.length > 0) {
-            filesWithIssues.add(fullPath);
-            findings.push(...fileFindings);
-          }
-        } catch (err) {
-          // Log error but continue scanning other files
-          if (options.verbose) {
-            console.error(`Error scanning ${fullPath}:`, err);
-          }
-        }
+    } catch (err) {
+      // Log error but continue scanning other files
+      if (options.verbose) {
+        console.error(`Error scanning ${fullPath}:`, err);
       }
+    } finally {
+      scannedFiles += 1;
+      options.onProgress?.({
+        currentFile: fullPath,
+        scannedFiles,
+        totalFiles,
+        filesWithIssues: filesWithIssues.size,
+        findingsCount: findings.length,
+      });
     }
   }
-
-  await scanRecursive(dirPath);
 
   // Calculate summary
   const summary = {
@@ -187,6 +180,30 @@ export async function scanDirectory(
     summary,
     scannedAt: new Date(),
   };
+}
+
+async function collectScanTargets(
+  currentPath: string,
+  ignorePatterns: string[],
+): Promise<string[]> {
+  const entries = await readdir(currentPath, { withFileTypes: true });
+  const targets: string[] = [];
+
+  for (const entry of entries) {
+    const fullPath = join(currentPath, entry.name);
+
+    if (shouldIgnore(entry.name, ignorePatterns)) {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      targets.push(...(await collectScanTargets(fullPath, ignorePatterns)));
+    } else if (entry.isFile() && isScanableFile(entry.name)) {
+      targets.push(fullPath);
+    }
+  }
+
+  return targets;
 }
 
 function shouldIgnore(name: string, patterns: string[]): boolean {

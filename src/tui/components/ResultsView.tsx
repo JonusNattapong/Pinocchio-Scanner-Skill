@@ -21,7 +21,12 @@ type Props = {
   path: string;
   isDirectory: boolean;
   result: UnifiedResult;
+  exportState?: {
+    reportPath?: string;
+    sarifPath?: string;
+  };
   onRestart: () => void;
+  onExport?: () => void | Promise<void>;
 };
 
 const severityFilters = ["all", "critical", "high", "medium", "low"] as const;
@@ -30,7 +35,9 @@ export default function ResultsView({
   path,
   isDirectory,
   result,
+  exportState,
   onRestart,
+  onExport,
 }: Props): React.JSX.Element {
   const [filterIndex, setFilterIndex] = useState<number>(0);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -41,7 +48,7 @@ export default function ResultsView({
     return result.findings.filter((finding) => finding.severity === filter);
   }, [filterIndex, result.findings]);
 
-  useInput((input: string, key: { upArrow?: boolean; downArrow?: boolean; leftArrow?: boolean; rightArrow?: boolean; return?: boolean }) => {
+  useInput((input: string, key: { upArrow?: boolean; downArrow?: boolean; leftArrow?: boolean; rightArrow?: boolean }) => {
     if (key.leftArrow) {
       setFilterIndex((prev: number) => (prev - 1 + severityFilters.length) % severityFilters.length);
       setSelectedIndex(0);
@@ -60,55 +67,74 @@ export default function ResultsView({
       setSelectedIndex((prev: number) => Math.min(filtered.length - 1, prev + 1));
       return;
     }
-    if (key.return && input.toLowerCase() === "r") {
+    if (input.toLowerCase() === "r") {
       onRestart();
+      return;
+    }
+    if (input.toLowerCase() === "e") {
+      void onExport?.();
     }
   });
 
   const selected = filtered[selectedIndex] ?? null;
+  const summary = result.summary ?? {
+    totalFiles: result.findings.length > 0 ? 1 : 0,
+    filesWithIssues: result.findings.length > 0 ? 1 : 0,
+    criticalCount: result.findings.filter((finding) => finding.severity === "critical").length,
+    highCount: result.findings.filter((finding) => finding.severity === "high").length,
+    mediumCount: result.findings.filter((finding) => finding.severity === "medium").length,
+    lowCount: result.findings.filter((finding) => finding.severity === "low").length,
+  };
+  const exportsInfo = exportState ?? {};
 
   return (
-    <Box flexDirection="column">
-      <Text bold>Results</Text>
+    <Box flexDirection="column" borderStyle="round" borderColor="green" paddingX={1} paddingY={1}>
+      <Text bold color="green">Scan results</Text>
       <Text color="gray">Target: {path}</Text>
       <Text color="gray">Mode: {isDirectory ? "Directory" : "File"}</Text>
       <Text color="gray">Scanned at: {result.scannedAt.toISOString()}</Text>
-      {result.summary && (
-        <Box flexDirection="row" marginTop={1} gap={2}>
-          <Text>Total files: {result.summary.totalFiles}</Text>
-          <Text>Files with issues: {result.summary.filesWithIssues}</Text>
-          <Text color="red">Critical: {result.summary.criticalCount}</Text>
-          <Text color="magenta">High: {result.summary.highCount}</Text>
-          <Text color="yellow">Medium: {result.summary.mediumCount}</Text>
-          <Text color="blue">Low: {result.summary.lowCount}</Text>
-        </Box>
-      )}
-      <Box marginTop={1} flexDirection="row">
-        <Text>Filter: </Text>
+      <Box marginTop={1} flexDirection="row" flexWrap="wrap">
+        <Text color="cyan">Files: {summary.totalFiles}   </Text>
+        <Text color="yellow">Files with issues: {summary.filesWithIssues}   </Text>
+        <Text color="red">Critical: {summary.criticalCount}   </Text>
+        <Text color="red">High: {summary.highCount}   </Text>
+        <Text color="yellow">Medium: {summary.mediumCount}   </Text>
+        <Text color="blue">Low: {summary.lowCount}</Text>
+      </Box>
+      <Box marginTop={1}>
+        <Text color="gray">Filter</Text>
+        <Text> </Text>
         {severityFilters.map((filter, index) => (
-          <Text key={filter} color={index === filterIndex ? "cyan" : undefined}>
-            {filter}
-            {index < severityFilters.length - 1 ? " | " : ""}
+          <Text key={filter} color={index === filterIndex ? "cyan" : "gray"}>
+            [{filter}]
           </Text>
         ))}
       </Box>
-      <Box marginTop={1} flexDirection="row" gap={4}>
-        <Box flexDirection="column" width="50%">
+      <Box marginTop={1} flexDirection="row" gap={2}>
+        <Box flexDirection="column" width="55%">
           <Text bold>Findings ({filtered.length})</Text>
           {filtered.length === 0 && <Text color="green">No findings for this filter.</Text>}
           {filtered.map((finding: SecurityFinding, index: number) => (
-            <Text key={`${finding.filePath}-${finding.line}-${finding.column}`} color={index === selectedIndex ? "cyan" : undefined}>
-              {index === selectedIndex ? ">" : " "} [{finding.severity}] {finding.type} - {finding.message}
+            <Text
+              key={`${finding.filePath}-${finding.line}-${finding.column}`}
+              color={index === selectedIndex ? "cyan" : undefined}
+            >
+              {index === selectedIndex ? ">" : " "} [{finding.severity}] {finding.type}
             </Text>
           ))}
         </Box>
-        <Box flexDirection="column" width="50%">
+        <Box flexDirection="column" width="45%">
           <Text bold>Details</Text>
           <FindingDetail finding={selected} />
         </Box>
       </Box>
-      <Box marginTop={1}>
-        <Text color="yellow">Press R to restart, Esc to exit.</Text>
+      <Box marginTop={1} flexDirection="column">
+        <Text color="yellow">R restart  E export again  Arrow keys filter and inspect</Text>
+        {(exportsInfo.reportPath || exportsInfo.sarifPath) && (
+          <Text color="gray">
+            Exported: {exportsInfo.reportPath ?? "-"} {exportsInfo.sarifPath ?? ""}
+          </Text>
+        )}
       </Box>
     </Box>
   );

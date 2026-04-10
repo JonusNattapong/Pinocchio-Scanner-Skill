@@ -29,13 +29,13 @@ Community-made skills often run with high privileges (filesystem, shell, network
 ### Use instantly with npx
 
 ```bash
-npx @jonusnattapong/pinocchio-scan ./path-to-skill
+npx pinocscan ./path-to-skill
 ```
 
 ### Install globally
 
 ```bash
-npm install -g @jonusnattapong/pinocchio-scan
+npm install -g pinocscan
 ```
 
 ### Docker
@@ -68,7 +68,7 @@ pinocchio-scan <path> [options]
 | `--checks <types>` | Comma-separated list of checks to run. | All |
 | `--ignore <patterns>` | Comma-separated glob patterns to ignore. | `node_modules,dist,build,.git,*.test.*,*.spec.*` |
 | `--fix` | Enable AI auto-remediation suggestions (experimental). | `false` |
-| `--provider <name>` | AI provider (`gemini`, `opencode`, `molt`, `openrouter`, `openai`). | `gemini` |
+| `--provider <name>` | AI provider (`gemini`, `opencode`, `molt`, `openrouter`, `openai`, `kilocode`). | `gemini` |
 | `--model <name>` | Override the provider model name. | Provider default |
 | `--web-search` | Enable AI web search capability (if supported). | `false` |
 
@@ -82,6 +82,15 @@ pinocchio-scan ./repo --json > report.json
 pinocchio-scan ./skills --fix --provider openrouter --model "meta-llama/llama-3.1-8b-instruct:free"
 pinocchio-scan --tui
 ```
+
+### TUI flow
+
+The TUI now acts as the primary interactive workflow:
+
+1. Enter a file or directory path.
+2. Choose a scan profile, including severity, check set, AI options, and export toggles.
+3. Watch live progress during directory scans.
+4. Inspect findings with a split detail panel and re-export reports from the results screen.
 
 ---
 
@@ -135,23 +144,25 @@ Semantic analysis and remediation require an AI provider. Configure via environm
 | Gemini | `GEMINI_API_KEY` | `gemini-pro` |
 | OpenRouter | `OPENROUTER_API_KEY` | `meta-llama/llama-3.1-8b-instruct:free` |
 | OpenAI | `OPENAI_API_KEY` | `gpt-4o-mini` |
+| **Kilocode** | **`KILO_API_KEY`** | **`anthropic/claude-sonnet-4.5`** |
 | Opencode | `OPENCODE_API_BASE`, optional `OPENCODE_API_KEY` | `opencode-model` |
 | Molt | `MOLT_API_BASE`, optional `MOLT_API_KEY` | `molt-model` |
 
 Notes:
 - `--web-search` currently augments prompts for providers that support search or grounding.
 - If no provider is configured, semantic analysis and auto-remediation are skipped.
+- **Kilocode** is a unified gateway to 500+ models (Claude, GPT-4, Gemini, Grok, etc.). Switch models without code changes. [Setup guide →](docs/KILOCODE_SETUP.md)
 
 ---
 
 ## Programmatic usage
 
 ```bash
-npm install @jonusnattapong/pinocchio-scan
+npm install pinocscan
 ```
 
 ```typescript
-import { scanCode } from "@jonusnattapong/pinocchio-scan";
+import { scanCode } from "pinocscan";
 
 const code = "exec('rm -rf ' + path);";
 const findings = await scanCode(code, {

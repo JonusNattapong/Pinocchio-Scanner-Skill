@@ -12,9 +12,19 @@ export interface ScanOptions {
     | "molt"
     | "openrouter"
     | "openai"
+    | "kilocode"
     | string;
   aiModel?: string;
   webSearch?: boolean;
+  onProgress?: (progress: ScanProgress) => void;
+}
+
+export interface ScanProgress {
+  currentFile: string;
+  scannedFiles: number;
+  totalFiles: number;
+  filesWithIssues: number;
+  findingsCount: number;
 }
 
 export interface SecurityFinding {

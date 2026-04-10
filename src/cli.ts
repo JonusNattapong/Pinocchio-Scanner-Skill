@@ -195,7 +195,7 @@ ${colorize("OPTIONS:", colors.bold)}
                       semantic-analysis, malware-scan, cisco-defense, dependency-audit
   --ignore <patterns> Comma-separated glob patterns to ignore
   --fix               Enable auto-remediation suggestions (experimental)
-  --provider <name>   AI Provider (openrouter*, gemini, opencode, molt, openai)
+  --provider <name>   AI Provider (openrouter*, gemini, opencode, molt, openai, kilocode)
   --web-search        Enable AI web search capability (if supported)
 
 ${colorize("EXAMPLES:", colors.bold)}

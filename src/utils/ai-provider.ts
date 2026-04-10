@@ -148,6 +148,15 @@ export function getAIProvider(options: ScanOptions): AIProvider | null {
         options.aiModel || "gpt-4o-mini",
       );
     }
+  } else if (providerType === "kilocode") {
+    const apiKey = process.env.KILO_API_KEY;
+    if (apiKey) {
+      provider = new OpenAICompatibleProvider(
+        apiKey,
+        "https://api.kilo.ai/api/gateway",
+        options.aiModel || "anthropic/claude-sonnet-4.5",
+      );
+    }
   }
 
   if (provider && options.webSearch) {

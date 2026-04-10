@@ -1,5 +1,5 @@
 {
-  "name": "@jonusnattapong/pinocchio-scan",
+  "name": "pinocscan",
   "version": "1.3.2",
   "description": "Security scanner for agent skill files - detects command injection, unsafe file operations, hardcoded secrets, and code injection risks",
   "type": "module",
