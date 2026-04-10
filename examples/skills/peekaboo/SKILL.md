@@ -1,6 +1,6 @@
 ---
 name: peekaboo
-description: Capture and automate macOS UI with the Peekaboo CLI.
+description: "Capture screenshots, automate UI interactions, and manage macOS apps and windows using the Peekaboo CLI. Drives clicks, keystrokes, mouse gestures, menus, and Dock items by element ID or coordinates. Use when the user needs to take screenshots, click UI elements, type text, automate mouse or keyboard input, inspect screens, control application windows, or interact with macOS system UI."
 homepage: https://peekaboo.boo
 metadata: {"moltbot":{"emoji":"👀","os":["darwin"],"requires":{"bins":["peekaboo"]},"install":[{"id":"brew","kind":"brew","formula":"steipete/tap/peekaboo","bins":["peekaboo"],"label":"Install Peekaboo (brew)"}]}}
 ---
@@ -148,6 +148,17 @@ peekaboo press escape
 peekaboo type "Line 1\nLine 2" --delay 10
 ```
 
-Notes
-- Requires Screen Recording + Accessibility permissions.
-- Use `peekaboo see --annotate` to identify targets before clicking.
+## Verification
+
+After performing actions, verify results:
+```bash
+# Confirm element was clicked / text was typed by re-capturing the screen
+peekaboo see --app Safari --annotate --path /tmp/verify.png
+# Check app/window state
+peekaboo list windows --app Safari --json
+```
+
+## Notes
+- Requires Screen Recording + Accessibility permissions. Run `peekaboo permissions` first.
+- Always use `peekaboo see --annotate` to identify targets before clicking.
+- Prefer element IDs (`--on B1`) over coordinates for reliability.

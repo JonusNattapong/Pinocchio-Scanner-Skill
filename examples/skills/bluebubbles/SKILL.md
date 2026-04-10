@@ -1,11 +1,15 @@
 ---
 name: bluebubbles
-description: Build or update the BlueBubbles external channel plugin for Moltbot (extension package, REST send/probe, webhook inbound).
+description: "Build or update the BlueBubbles iMessage channel plugin for Moltbot, including REST send/probe endpoints, webhook inbound handling, reactions, typing indicators, and attachment downloads. Use when working on BlueBubbles integration, iMessage channel support, the extensions/bluebubbles/ directory, or any webhook, send, or probe logic for the BlueBubbles plugin."
 ---
 
 # BlueBubbles plugin
 
-Use this skill when working on the BlueBubbles channel plugin.
+## Quickstart
+
+1. Locate the extension at `extensions/bluebubbles/`
+2. Entry point: `index.ts` — registers the channel with Moltbot
+3. Key files: `channel.ts` (channel impl), `monitor.ts` (webhook handler), `send.ts` (message delivery), `probe.ts` (health check)
 
 ## Layout
 - Extension package: `extensions/bluebubbles/` (entry: `index.ts`).
@@ -34,6 +38,16 @@ Use this skill when working on the BlueBubbles channel plugin.
 ## Config (core)
 - `channels.bluebubbles.serverUrl` (base URL), `channels.bluebubbles.password`, `channels.bluebubbles.webhookPath`.
 - Action gating: `channels.bluebubbles.actions.reactions` (default true).
+
+## Verification
+
+After making changes, verify the plugin works:
+```bash
+# Run the extension tests
+npm test -- --grep bluebubbles
+# Verify probe endpoint responds
+curl -s http://localhost:<port>/api/bluebubbles/probe | jq .
+```
 
 ## Message tool notes
 - **Reactions:** The `react` action requires a `target` (phone number or chat identifier) in addition to `messageId`. Example: `action=react target=+15551234567 messageId=ABC123 emoji=❤️`
